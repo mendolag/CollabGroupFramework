@@ -1,0 +1,132 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+<link rel="import" href="/bower_components/iron-icons/image-icons.html">
+<link rel="import" href="/bower_components/iron-icons/av-icons.html">
+
+<dom-module id="liquid-component-webcam">
+  <style>
+      #container {
+        width: 580px;
+        height: 320px;
+        text-align: center;
+        margin: auto;
+      }
+
+      #videoContainer, #canvasContainer {
+        width: 250px;
+        height: 240px;
+        border: 1px black solid;
+        margin: auto;
+        margin-top: 20px;
+        margin-bottom: 20px;
+      }
+
+      #videoContainer {
+        float: left;
+        margin-left: 20px;
+      }
+
+      #canvasContainer {
+        float:right;
+        margin-right: 20px;
+      }
+
+      #buttonContainer {
+        clear:both;
+      }
+
+    </style>
+  <template>
+  
+    <div id="container" style="border: 1px solid black">
+      <div id="videoContainer">
+        <video id="video">Video stream not available.</video>
+        <canvas id="canvas" width="250px" height="240px" style="display:none"></canvas>
+      </div>
+      
+      <div id="canvasContainer">
+        <img id="photo" alt="">
+      </div>
+
+      <div id="buttonContainer">
+        <paper-icon-button id="webcamIcon" icon="av:videocam" on-click="videoHandler"></paper-icon-button>
+        <paper-icon-button icon="image:camera-alt" on-click="takePicture"></paper-icon-button>
+        <paper-icon-button icon="remove" on-click="clearPicture"></paper-icon-button>
+      </div>
+    </div>
+  
+  </template>
+  <script>
+    Polymer({
+      is: 'liquid-component-webcam',
+      created: function () {
+        this.video = undefined;
+        this.canvas = undefined;
+        this.photo = undefined;
+        this.startbutton = undefined;
+        this.media = undefined;
+        this.ctx = undefined;
+        this.interval = undefined;
+      },
+      ready: function () {
+        this.video = this.$.video;
+        this.canvas = this.$.canvas;
+        this.photo = this.$.photo;
+        this.ctx = this.canvas.getContext('2d');
+        if (navigator.getUserMedia == undefined) {
+          navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.getUserMedia;
+          window.URL = window.URL || window.webkitURL;
+        }
+        var videoConstraints = {
+          mandatory: {
+            maxHeight: 240,
+            maxWidth: 250
+          },
+          optional: []
+        };
+        navigator.getUserMedia({ video: videoConstraints }, this.yesStream.bind(this), this.noStream.bind(this));
+      },
+      noStream: function (e) {
+        console.log('Fail to load stream');
+        console.log(e);
+      },
+      yesStream: function (stream) {
+        this.video.src = window.URL.createObjectURL(stream);
+        this.video.play();
+        this.video.onerror = function (e) {
+          console.log(e);
+          stream.stop();
+        };
+      },
+      videoHandler: function () {
+        this.streaming = !this.streaming;
+        if (this.streaming) {
+          this.$.webcamIcon.icon = 'av:videocam-off';
+          this.takePicture();
+          this.interval = setInterval(this.takePicture.bind(this), 1000);
+        } else {
+          this.$.webcamIcon.icon = 'av:videocam';
+          clearInterval(this.interval);
+        }
+      },
+      takePicture: function () {
+        var canvas = this.canvas;
+        var ctx = this.ctx;
+        var photo = this.photo;
+        ctx.drawImage(this.video, 0, 0, canvas.width, canvas.height);
+        this.picture = canvas.toDataURL('image/jpeg');
+        photo.src = this.picture;
+        this.fire('var-push', { 'picture': this.picture });
+      },
+      clearPicture: function () {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.picture = this.canvas.toDataURL('image/jpeg');
+        this.photo.src = this.picture;
+        this.fire('var-push', { 'picture': this.picture });
+      },
+      liquid_picture_post: function (value) {
+        this.picture = value;
+        this.photo.src = this.picture;
+      }
+    });
+  </script>
+</dom-module>

@@ -1,0 +1,52 @@
+<link rel="import" href="/static/polymer/polymer.html">
+<link rel="import" href="/static/iron-form/iron-form.html">
+<link rel="import" href="/static/iron-ajax/iron-ajax.html">
+<link rel="import" href="/static/paper-input/paper-input.html">
+<link rel="import" href="/static/paper-button/paper-button.html">
+
+
+<dom-module id="my-signup">
+    <style>
+
+    </style>
+    <template>
+        Da qua
+        <form is="iron-form" id="signupForm" method="post" action={{action}}>
+            <paper-input name="email" label="username"></paper-input>
+            <paper-input name="password" label="password" type="password"></paper-input>
+            <paper-input name="password2" label="type password again" type="password"></paper-input>
+            <paper-button raised onclick="submitForm()" >Submit</paper-button>
+        </form>
+        a qua
+    </template>
+    <script>
+        (function () {
+            'use strict';
+            Polymer({
+                is: 'my-signup',
+
+                attached: function(){
+                    this.$.signupForm.addEventListener('iron-form-response',function(e){
+                      console.log(e);
+                  })
+                },
+
+//                _submit:function(){
+//                   var a= document.getElementById("signupForm");
+//                    console.log(a);
+//                    console.log();
+//                    //document.getElementById("signupForm").submit();
+//                }
+                formResponse: function(e) {
+                    console.log(e)
+                }
+
+            })
+        })();
+        function submitForm() {
+            document.getElementById('signupForm').submit();
+        }
+
+
+    </script>
+</dom-module>

@@ -1,0 +1,37 @@
+{
+  "name": "usi_liquid_application",
+  "version": "0.0.0",
+  "authors": [
+    "Andrea Gallidabino <andrea.gallidabino@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "iron-dropdown": "PolymerElements/iron-dropdown#~1.0.5",
+    "iron-icons": "PolymerElements/iron-icons#~1.0.3",
+    "observe-js": "~0.5.6",
+    "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#~1.0.2",
+    "paper-header-panel": "PolymerElements/paper-header-panel#~1.0.4",
+    "paper-icon-button": "PolymerElements/paper-icon-button#~1.0.3",
+    "paper-input": "PolymerElements/paper-input#~1.0.11",
+    "paper-item": "PolymerElements/paper-item#~1.0.2",
+    "paper-menu": "PolymerElements/paper-menu#~1.1.0",
+    "SimpleWebRTC": "*",
+    "y-webrtc": "~0.5.0",
+    "y-xmpp": "~0.5.0",
+    "yjs": "y-js/yjs#~0.5.3",
+    "jquery": "^2.2.0",
+    "paper-drawer-panel": "PolymerElements/paper-drawer-panel#^1.0.6",
+    "paper-spinner": "PolymerElements/paper-spinner#^1.1.0",
+    "neon-animation": "PolymerElements/neon-animation#^1.1.0",
+    "paper-toolbar": "PolymerElements/paper-toolbar#^1.1.4",
+    "webcomponentsjs": "^0.7.20",
+    "polymer": "Polymer/polymer#^1.2.0"
+  }
+}

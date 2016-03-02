@@ -1,0 +1,226 @@
+<link rel="import" href="/bower_components/neon-animation/neon-animations.html">
+
+<link rel="import" href="/bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="/bower_components/paper-icon-button/paper-icon-button.html">
+
+<dom-module id="liquid-component-migrate">
+  <style is="custom-style">
+    #toolbar {
+      margin:0px;
+      --paper-toolbar-height: 20px;
+      --paper-toolbar-color: white;
+      --paper-toolbar-background: #444;
+    }
+
+    #showList {
+      --iron-icon-stroke-color: none;
+      --iron-icon-fill-color: white;
+      --iron-icon-height: 15px;
+      --iron-icon-width: 15px;
+    }
+
+    #migrationList, #migrationListFrame, .device-item, .liquid-operation-button {
+      padding: 0px;
+      margin: 0px; 
+      height: 100px;
+    }
+
+    #migrationList, #migrationListFrame {
+      width: 100%;
+    }
+
+    #migrationListFrame {
+      overflow-x:auto;
+      overflow-y:hidden;
+      white-space: nowrap;
+    }
+
+    .device-item {
+      display:inline-block;
+      width: 150px;
+    }
+
+    .device-item {
+      list-style-type: none;
+    }
+
+    .liquid-operation-name {
+      width: 148px;
+      border-bottom: 1px solid black;
+      border-right: 2px solid black;
+      text-align: center;
+      word-wrap: normal;
+    }
+
+    .liquid-operation-button {
+      width: 74px;
+      height: 40px;
+      float: left;
+      display: flex;
+      align-items: center; 
+      justify-content: center; 
+    }
+
+    .liquid-operation-button-right {
+      border-right: 2px solid black;
+    }
+
+    .liquid-operation-box {
+      margin: 0 auto;
+      width: 60px;
+      height: 30px;
+      border:1px solid black;
+      display: flex;
+      align-items: center; 
+      justify-content: center; 
+    }
+  </style>
+  <template>
+    <div id="migrationList">
+      <ul id="migrationListFrame">
+        <template is="dom-repeat" items="{{devicesToArray(devices)}}" as="item">
+          <li class="device-item">
+            <div class="liquid-operation-name">{{item.id}}</div>
+            <div class="liquid-operation-button">
+              <div class="liquid-operation-box" on-drop="onDrop" on-dragover="onAllowDrop" on-touchend="onTouch">
+                M
+              </div>
+            </div>
+            <div class="liquid-operation-button liquid-operation-button-right">
+              <div class="liquid-operation-box" on-drop="onDrop" on-dragover="onAllowDrop">
+                F
+              </div>
+            </div>
+            <div class="liquid-operation-button">
+              <div class="liquid-operation-box" on-drop="onDrop" on-dragover="onAllowDrop">
+                C
+              </div>
+            </div>
+            <div class="liquid-operation-button liquid-operation-button-right">
+              <div class="liquid-operation-box" on-drop="onDrop" on-dragover="onAllowDrop">
+                X
+              </div>
+            </div>
+          </li>
+        </template>
+      </ul>
+    </div>
+    <paper-toolbar id="toolbar">
+      <span class="flex"></span>
+      <iron-icon id="showList" icon="icons:expand-more" on-click="toggleToolbar"></iron-icon>
+    </paper-toolbar>
+  </template>
+  <script>
+    Polymer({
+      is: 'liquid-component-migrate',
+
+      behaviors: [
+        Polymer.NeonAnimationRunnerBehavior
+      ],
+
+      properties: {
+        devices: {
+          value: function(){return Liquid.getDevicesList();},
+          type: Object
+        },
+        opened: {
+          value: false,
+          type: Boolean
+        },
+        animationLock: {
+          value: false,
+          type: Boolean
+        },
+        animationConfig: {
+          value: function() {
+            return {
+              'entry': {
+                name: 'slide-from-top-animation',
+                node: this.$.migrationList
+              },
+              'exit': {
+                name: 'slide-up-animation',
+                node: this.$.migrationList
+              }
+            }
+          }
+        }
+      },
+
+      listeners: {
+        'neon-animation-finish': '_onNeonAnimationFinish'
+      },
+
+      attached: function() {
+        Liquid.addEventListener('pairedDevicesListUpdate', this.updateDeviceList.bind(this))
+        this.$.migrationList.style.display = 'none'
+      },
+
+      detached: function() {
+        Liquid.removeEventListener('pairedDevicesListUpdate', this.updateDeviceList)
+      },
+
+      show: function() {
+        if(!this.animationLock) {
+          this.animationLock = true;
+          this.opened = true;
+          this.$.migrationList.style.display = 'inline-block';
+          this.playAnimation('entry');
+        }
+      },
+
+      hide: function() {
+        if(!this.animationLock) {
+          this.animationLock = true;
+          this.opened = false;
+          this.playAnimation('exit');
+        }
+      },
+
+      _onNeonAnimationFinish: function() {
+        if (!this.opened) {
+          this.$.migrationList.style.display = 'none';
+        }
+        this.animationLock = false;
+      },
+
+      toggleToolbar: function() {
+        if(this.opened) {
+          this.hide()
+          this.$.showList.icon = 'icons:expand-more'
+        } else {
+          this.show()
+          this.$.showList.icon = 'icons:expand-less'
+        }
+      },
+
+      updateDeviceList: function(devicesList) {
+        this.devices = devicesList
+      },
+
+      devicesToArray: function(devices) {
+        var a = [{id: '_liquidBroadcast', username: 'Broadast'}]
+        for(var d in  devices) {
+          a.push({id: d, username: devices[d]})
+        }
+        return a
+      },
+
+      onAllowDrop: function(e) {
+          console.log('lol')
+          e.preventDefault();
+      },
+
+      onDrop: function(e) {
+          console.log('we')
+          // var data = e.dataTransfer.getData("text");
+          // e.target.appendChild(document.getElementById(data));
+      },
+
+      onTouch: function(e) {
+        document.querySelector('#we').innerHTML = 'fase 2'
+        document.querySelector('#we').innerHTML = Liquid.getLastTouch()
+      }
+    });
+  </script>
+</dom-module>

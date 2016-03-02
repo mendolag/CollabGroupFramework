@@ -1,0 +1,59 @@
+<link rel="import" href="/static/polymer/polymer.html">
+<link rel="import" href="/static/iron-ajax/iron-ajax.html">
+<link rel="import" href="/static/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="/static/paper-item/paper-item.html">
+
+<dom-module id="my-compselect">
+    <style>
+
+    </style>
+    <template>
+                <iron-ajax auto
+                           url="/getElementList"
+                           response="{{items}}"
+                           handleas="json">
+                </iron-ajax>
+                <template if="{{items}}">
+                    <paper-dropdown-menu selected="{{selected}}">
+                        <template repeat="{{item in items}}">
+                            <paper-item label="{{item.name}}"></paper-item>
+                        </template>
+                    </paper-dropdown-menu>
+                </template>
+            </template>
+    </template>
+    <script>
+        (function () {
+            'use strict';
+            Polymer({
+                is: 'my-compselect',
+                properties:{
+                    selected:{
+                        type:Number,
+                        value:0,
+                        notify:true
+                    },
+                    items:{
+                        type:Array,
+                        notify:true
+                    },
+                    role:{
+                        type:String,
+                        value:'{{role}}',
+                        notify:true
+                    }
+                },
+                _clicked:function(e){
+                    for(var i= 0;i<items.length;i++){
+                        if(items[i].name==role){
+                            this.selected=i;
+                        }
+                    }
+
+                }
+
+
+            })
+        })();
+    </script>
+</dom-module>

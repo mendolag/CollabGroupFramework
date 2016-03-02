@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Administration Page</title>
+    <!--<script src="../bower_components/webcomponentsjs/webcomponents.js"/>-->
+    <link rel="import" href="/static/webcomponentsjs/webcomponents-lite.min.js">
+    <link rel="import" href="/mycomp/mylist.html">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+    <link rel="import" href="/static/polymer/polymer.html">
+    <link rel="import" href="/static/paper-button/paper-button.html">
+    <link rel="import" href="/static/paper-icon-button/paper-icon-button.html">
+    <link rel="import" href="/static/paper-toolbar/paper-toolbar.html">
+    <link rel="import" href="/static/iron-icons/iron-icons.html">
+    <meta charset="UTF-8">
+
+    <style>
+        #toolbar{margin-bottom: 80px}
+        .subtitle{color:blue}
+    </style>
+</head>
+<body>
+<div id="toolbar">
+<paper-toolbar class="toolbar">
+    <div class="title">Admininstration Page</div>
+    <!--<paper-icon-button icon="add" on-tap="_addComp" onclick=addComp()></paper-icon-button>-->
+</paper-toolbar>
+</div>
+<%if (sucmex.length>0) { %>
+<div class="alert alert-success"><%= sucmex %></div>
+<% } %>
+<%if (errmex.length>0) { %>
+<div class="alert alert-danger"><%= errmex %></div>
+<% } %>
+<div class="col-sm-1 col-sm-offset-1">
+
+    <div class="subtitle"><h4 style="float: left">Users</h4><paper-icon-button icon="add"  onclick=addUser()></paper-icon-button></div>
+    <div><my-list url="/getUserList" field1=email table-name="manageuser"></my-list></div>
+</div>
+<div class="col-sm-1 col-sm-offset-1">
+    <div class="subtitle"><h4 style="float: left">Roles</h4><paper-icon-button icon="add"  onclick=addRole()></paper-icon-button></div>
+    <my-list url="/getRoleList" field1=name table-name="managerole"></my-list>
+</div>
+<div class="col-sm-2 col-sm-offset-1">
+    <div class="subtitle"><h4 style="float: left">Components</h4><paper-icon-button icon="add"  onclick=addComp()></paper-icon-button></div>
+    <my-list url="/getComponentList" field1=name table-name="managecomponent"></my-list>
+</div>
+
+<script>
+    function addUser(){
+        var url="/signupThird";
+        window.location.href = url;
+    }
+    function addRole(){
+        var url="/addRole"
+
+        window.location.href=url;
+    }
+    function addComp(){
+        var url="/addcomponent";
+        window.location.href = url;
+    }
+</script>
+
+</body>
+</html>

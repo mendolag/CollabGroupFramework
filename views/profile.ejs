@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+    <title>Node Authentication</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <!--<link rel="import" href="/static/polymer/polymer.html">-->
+    <!--<link rel="import" href="/static/paper-icon-button/paper-icon-button.html>">-->
+    <!--<link rel="import" href="/static/iron-icons/iron-icons.html">-->
+    <!--<script src="/liquid.js"></script>-->
+    <style>
+        body {padding-top: 80px; word-wrap: break-word;}
+    </style>
+</head>
+<body>
+<%if (message.length>0) { %>
+<div class="alert alert-success"><%= message %></div>
+<% } %>
+<dic container="container">
+    <div class="page-header text-center">
+        <h1><span class="fa fa-anchor"></span> Profile Page</h1>
+        <a href="/logout" class="btn btn-default btn-sm">Logout</a>
+    </div>
+    <div class="row" id="pimmino">
+        <!-- Local Information -->
+        <div class="col-sm-6">
+            <h3><span class="fa fa-user"></span> Local</h3>
+            <p>
+                <strong>id</strong>: <%= user._id%><br>
+                <strong>email</strong>: <%= user.email%><br>
+                <strong>role</strong>:<%= role%>
+            </p>
+            <%if (role=="admin") { %>
+            <div><a href="/admin" class="btn btn-default"><span class="fa fa-user"></span> Administrator page</a>
+            </div>
+
+            <% } %>
+
+        </div>
+    </div>
+</dic>
+    <script src="/liquidAPI.js"></script>
+    <script>
+
+//        var div = document.querySelector('#pimmino')
+//
+//        Liquid.create({
+//            deploymentServers: ['http://localhost:8888'],
+//            stateServer: 'http://localhost:8888'
+//        }, function(){
+//            Liquid.loadComponent('text', function(){
+//                Liquid.createComponent('text', div, {liquidExperience: true},function(){
+//                    console.log('done')
+//                })
+//            })
+//        })
+    </script>
+</body>
+</html>

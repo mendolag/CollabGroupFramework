@@ -1,0 +1,52 @@
+{
+	"title": "Liquidjs",
+	"port": 12300,
+
+	"pages": {
+		"text": {
+			"globals": [],
+			"locals": []
+		},
+
+		"keyboard": {
+			"globals": [],
+			"locals": []
+		},
+
+		"webcam": {
+			"globals": [],
+			"locals": []
+		}
+	},	
+
+	"initialisation": {
+		"text": "",
+		"personalText": "",
+		"last": "",
+		"picture": ""
+	},
+
+	"permission": {
+		"personalText": {
+			"read": true,
+			"write": true
+		},
+		"last": {
+			"read": false,
+			"write": false
+		}
+	},
+
+	"wsliquid": {
+		"enable": true,
+		"port": 12304,
+		"host": "10.62.163.3",
+		"host2": "10.40.2.168"
+	},
+
+	"database": {
+		"url": "mongodb://10.62.163.3:27017"
+	},
+
+	"variable_forwarding": "socket"
+}

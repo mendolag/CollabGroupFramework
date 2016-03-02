@@ -1,0 +1,166 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+
+<dom-module id="liquid-component-keyboard">
+  <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        #container {
+            margin: auto;
+            width: 688px;
+            height: 230px;
+            text-align: center;
+        }
+        #write {
+            margin: 0 0 5px;
+            padding: 5px;
+            width: 671px;
+            height: 200px;
+            font: 1em/1.5 Verdana, Sans-Serif;
+            background: #fff;
+            border: 1px solid #f9f9f9;
+            -moz-border-radius: 5px;
+            -webkit-border-radius: 5px;
+        }
+
+        #keyboard {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        #keyboard li {
+            float: left;
+            margin: 0 5px 5px 0;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            background: #fff;
+            border: 1px solid gray;
+            -moz-border-radius: 5px;
+            -webkit-border-radius: 5px;
+        }
+
+        .capslock, .tab, .left-shift {
+            clear: left;
+        }
+
+        #keyboard .tab, #keyboard .delete {
+            width: 70px;
+        }
+
+        #keyboard .capslock {
+            width: 80px;
+        }
+
+        #keyboard .return {
+            width: 77px;
+        }
+
+        #keyboard .left-shift {
+            width: 95px;
+        }
+
+        #keyboard .right-shift {
+            width: 109px;
+        }
+
+        .lastitem {
+            margin-right: 0;
+        }
+
+        .uppercase {
+            text-transform: uppercase;
+        }
+
+        #keyboard .space {
+            clear: left;
+            width: 681px;
+        }
+
+        .on {
+            display: none;  
+        }
+
+        #keyboard li:hover {
+            position: relative;
+            top: 1px;
+            left: 1px;
+            border-color: #e5e5e5;
+            cursor: pointer;
+        }
+    </style>
+  <template>
+      <div id="container" style="border: 1px solid black">
+          <ul id="keyboard">
+              <li on-click="press" class="symbol">`</li>
+              <li on-click="press" class="symbol">1</li>
+              <li on-click="press" class="symbol">2</li>
+              <li on-click="press" class="symbol">3</li>
+              <li on-click="press" class="symbol">4</li>
+              <li on-click="press" class="symbol">5</li>
+              <li on-click="press" class="symbol">6</li>
+              <li on-click="press" class="symbol">7</li>
+              <li on-click="press" class="symbol">8</li>
+              <li on-click="press" class="symbol">9</li>
+              <li on-click="press" class="symbol">0</li>
+              <li on-click="press" class="symbol">-</li>
+              <li on-click="press" class="symbol">=</li>
+              <li on-click="press" class="delete lastitem">delete</li>
+              <li on-click="press" class="tab"> </li>
+              <li on-click="press" class="letter">q</li>
+              <li on-click="press" class="letter">w</li>
+              <li on-click="press" class="letter">e</li>
+              <li on-click="press" class="letter">r</li>
+              <li on-click="press" class="letter">t</li>
+              <li on-click="press" class="letter">y</li>
+              <li on-click="press" class="letter">u</li>
+              <li on-click="press" class="letter">i</li>
+              <li on-click="press" class="letter">o</li>
+              <li on-click="press" class="letter">p</li>
+              <li on-click="press" class="symbol">[</li>
+              <li on-click="press" class="symbol">]</li>
+              <li on-click="press" class="symbol lastitem"></li>
+              <li on-click="press" class="capslock"></li>
+              <li on-click="press" class="letter">a</li>
+              <li on-click="press" class="letter">s</li>
+              <li on-click="press" class="letter">d</li>
+              <li on-click="press" class="letter">f</li>
+              <li on-click="press" class="letter">g</li>
+              <li on-click="press" class="letter">h</li>
+              <li on-click="press" class="letter">j</li>
+              <li on-click="press" class="letter">k</li>
+              <li on-click="press" class="letter">l</li>
+              <li on-click="press" class="symbol">;</li>
+              <li on-click="press" class="symbol">'</li>
+              <li on-click="press" class="return lastitem"> </li>
+              <li on-click="press" class="left-shift"> </li>
+              <li on-click="press" class="letter">z</li>
+              <li on-click="press" class="letter">x</li>
+              <li on-click="press" class="letter">c</li>
+              <li on-click="press" class="letter">v</li>
+              <li on-click="press" class="letter">b</li>
+              <li on-click="press" class="letter">n</li>
+              <li on-click="press" class="letter">m</li>
+              <li on-click="press" class="symbol">,</li>
+              <li on-click="press" class="symbol">.</li>
+              <!-- <li on-click="press" class="symbol">/</li> -->
+              <li on-click="press" class="right-shift lastitem"></li>
+              <li on-click="press" class="space lastitem"> </li>
+          </ul>
+      </div>
+  
+  </template>
+  <script>
+    Polymer({
+      is: 'liquid-component-keyboard',
+      press: function (e, detail, sender) {
+        var character = sender.innerHTML;
+        this.fire('var-push', { 'button': character });
+      }
+    });
+  </script>
+</dom-module>

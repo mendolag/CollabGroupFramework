@@ -1,0 +1,54 @@
+<link rel="import" href="/bower_components/polymer/polymer.html">
+
+<dom-module id="liquid-dropdown">
+  <template>
+
+    <style>
+    </style>
+    
+    <select id="select">
+    </select>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'liquid-dropdown', 
+
+      properties: {
+        items: {
+          type: Array,
+          value: [],
+          notify: true,
+        }
+      },
+
+      observers: [
+        '_itemsChanged(items.*)'
+      ],
+
+      getSelected: function(e, detail) {
+        var selected = this.$.select
+
+        return selected.options[selected.selectedIndex].value
+      },
+
+      _itemsChanged: function(value) {
+        var select = this.$.select
+
+        while(select.firstChild) {
+          select.removeChild(select.firstChild)
+        }
+
+        this.items.forEach(function(item){
+          var i = document.createElement('option')
+          i.textContent = item.text
+          i.value = item.value
+          select.appendChild(i)
+        })
+      }
+
+    });
+  </script>
+
+</dom-module>

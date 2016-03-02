@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+    <title>Add Component</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <link rel="import" href="/static/webcomponentsjs/webcomponents-lite.min.js">
+    <link rel="import" href="/static/polymer/polymer.html">
+    <link rel="import" href="/static/iron-ajax/iron-ajax.html">
+    <link rel="import" href="/static/paper-dropdown-menu/paper-dropdown-menu.html">
+    <link rel="import" href="/static/paper-item/paper-item.html">
+    <!--<link rel="import" hrer="/mycomp/...">-->
+    <style>
+        body {padding-top:80px;}
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="jumbotron text-center">
+        <polymer-element name="foo-drop">
+            <template>
+                <core-ajax auto
+                           url="http://www.json-generator.com/api/json/get/bJMeMASvTm?indent=2"
+                           response="{{items}}"
+                           handleas="json">
+                </core-ajax>
+                <iron-ajax url='/getComponentList' last-response='{{items}}'  auto loading='{{loading}}' method='GET'></iron-ajax>
+                <template if="{{items}}">
+                    <paper-dropdown-menu selected="{{selected}}">
+                        <template repeat="{{item in items}}">
+                            <paper-item label="{{item.name}}"></paper-item>
+                        </template>
+                    </paper-dropdown-menu>
+                </template>
+            </template>
+            <script>
+                Polymer({
+                    publish: {
+                        selected: null
+                    }
+                });
+            </script>
+        </polymer-element>
+
+        <foo-drop selected="2"></foo-drop>
+
+    </div>
+</div>
+</body>
