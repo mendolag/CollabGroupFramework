@@ -9,7 +9,7 @@ var Schema=mongoose.Schema,
 
 var roleSchema = mongoose.Schema({
     name:String,
-    components:[{type:objectId, ref:'Components',perms:Number}]
+    components:[{component:{type:objectId, ref:'Components'},perms:String}]
 });
 
 

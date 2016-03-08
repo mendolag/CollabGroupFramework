@@ -9,12 +9,12 @@ var User=require("./models/user");
 var storage =   multer.diskStorage({
 
     destination: function (req, file, callback) {
-        console.log("dest");
+        //console.log("dest");
         callback(null, './app/AddedComponents');
     },
     filename: function (req, file, callback) {
-        console.log(file);
-        console.log("filename");
+        //console.log(file);
+        //console.log("filename");
         callback(null, file.originalname);
     }
 });
@@ -38,7 +38,7 @@ module.exports=function(app,passport,io){
     });
     //Login form
     app.get('/login', function(req, res){
-        console.log(req.params)
+        //console.log(req.params)
         res.render('login.ejs', {message:req.flash('loginMessage')});
     });
 
@@ -66,14 +66,14 @@ module.exports=function(app,passport,io){
     app.get('/profile', HFunc.isLoggedIn, function(req, res){
         //console.log(req.user._id);
         req.session.touch();
-        console.log("SeSSion1:");
-        console.log( req.session)
+        //console.log("SeSSion1:");
+        //console.log( req.session)
         DBfunc.getFullUser(req.user._id,function(err,user){
            if(err){
                throw err
            }
             if(user){
-               console.log(user.role);
+               //console.log(user.role);
 
                res.render('profile.ejs',{
                            user : user,
@@ -180,7 +180,7 @@ module.exports=function(app,passport,io){
         //res.header('Access-Control-Allow-Credentials', true);
         var id=req.params.id;
         //var next=HFunc.isAdmin(req,res);
-        console.log(id);
+        //console.log(id);
         DBfunc.getFullRole(id,function(err,role){
             if(role){
             res.render('roleManager.ejs',{role:role});}
@@ -251,7 +251,7 @@ module.exports=function(app,passport,io){
             }else if(role){
                 res.redirect("/managerole/"+roleId);
             }else{
-                console.log("non so cosa sto facendo");
+                console.log("o");
             }
         })
     })

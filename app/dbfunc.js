@@ -3,7 +3,6 @@
  */
 var User =require('./models/user');
 var Role=require('./models/role');
-var permComponent=require('./models/componentPerms');
 var Component=require('./models/components');
 var mongoose=require('mongoose');
 var ObjectId = mongoose.Types.ObjectId;
@@ -157,8 +156,6 @@ exports.getAllRole=function(req,res){
 
 exports.addRole=function(res,req,callback){
     var reqRole=req.body.role;
-    console.log(reqRole);
-    //var components= req.body.components;
     Role.findOne({'name':reqRole},function(err, role){
         if(err){
             callback(err,null);
@@ -177,17 +174,14 @@ exports.addRole=function(res,req,callback){
                     callback(null,true);
                 }
             });
-            //
-            //for (var i=0; i<components.length;i++){
-            //    newRole.components.push(Components.find({"name":components[i]}));
-            //}
         }
     })
 };
 
 exports.removeCompFromRole=function(RoleId,CompId,callback){
-    Role.update({_id:RoleId},{ $pull:  { components: CompId }},{upsert:true},function(err){
+    Role.update({_id:RoleId},{ $pull:  { components: {_id:CompId} }},{upsert:true},function(err,role){
         if(err){
+            console.log(err)
             callback(err,false);
         }else{
             callback(null,true);
@@ -210,26 +204,18 @@ exports.addComponentToRole=function(RoleId,CompId,callback){
                 err="found"
                 callback(err,null);
             }else{
-                //var compPerm=new permComponent();
-                //compPerm.componentId=CompId;
-                //compPerm.permissions.read=false;
-                //compPerm.permissions.write=false;
-                //compPerm.permissions.pull=false;
-                //compPerm.permissions.push=false;
-                compPerm.save(function(err,compPerm){
-                Role.update({_id: RoleId},{$pushAll: {components:[compPerm._id]}},{upsert:true},function(err,role){
+                Role.update({_id: RoleId},{$pushAll: {components:[{component:CompId,perms:"0000"}]}},{upsert:true},function(err,role){
                     if(err){
-                        console.log("ROLEERROR");
-                        console.log(err);
+
                         callback(err,null);
                     }else{
-                        console.log("ROLE");
-                        console.log(role);
+
                         callback(null,role);
                     }
                 });
-                })
+                
             }
+
         }
     })
 
