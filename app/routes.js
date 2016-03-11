@@ -200,7 +200,6 @@ module.exports=function(app,passport,io){
             }
             if(role){
                 var comps=role.components;
-                console.log(comps);
                 res.send(comps);
             }
         })

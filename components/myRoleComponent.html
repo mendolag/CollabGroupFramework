@@ -1,28 +1,39 @@
 <link rel="import" href="/static/polymer/polymer.html">
 <link rel="import" href="/static/iron-form/iron-form.html">
 <link rel="import" href="/static/iron-ajax/iron-ajax.html">
-<link rel="import" href="/static/paper-input/paper-input.html">
-<link rel="import" href="/static/paper-item/paper-item.html">
+<link rel="import" href="/static/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="/static/paper-button/paper-button.html">
-<dom-module id="my-list">
+<link rel="import" href="/static/paper-material/paper-material.html">
+<dom-module id="my-rolecomponent">
     <style>
         #listItem{
             border: 1px solid #DDDDDD;
             border-radius: 4px;
-            margin: 1px;
+            margin: 3px;
+        }
+        .horizontal-section{
+            min-height: 50px;
+        }
+        #checkboxes{
+
+            margin-left: 10px;
         }
     </style>
     <template>
 
         <div class="layout horizontal wrap" id="list">
-            <iron-ajax url={{url}} last-response='{{data}}'  auto loading='{{loading}}' method='GET'></iron-ajax>
-            <template is="dom-repeat" items="[[data]]" as="item" id="tempRepeat">
-                <div class="horizontal-section" role="listbox" on-click="_clicked" id="listItem">
-                    <paper-item >
-                        {{_findField(item)}}
-                    </paper-item>
-
-                </div>
+            <iron-ajax url={{url}} last-response='{{data}}'  auto  method='GET'></iron-ajax >
+            <template is="dom-repeat" items="[[data]]" as="item" id="tempRepeat" >
+                <paper-material class="horizontal-section" role="listbox" id="listItem" >
+                    {{item.component.name}}
+                    <div id="" data-item="{{item}}" >
+                        <paper-checkbox checked="{{item.read}}" change="{{loading()}}">read</paper-checkbox>
+                        <paper-checkbox checked="{{item.write}}" change="{{loading()}}">write</paper-checkbox>
+                        <paper-checkbox checked="{{item.push}}">push</paper-checkbox>
+                        <paper-checkbox checked="{{item.pull}}">pull</paper-checkbox>
+                        <!--{{_tPermissions:function(item)}}-->
+                    </div>
+                </paper-material>
             </template>
         </div>
     </template>
@@ -30,8 +41,23 @@
         (function () {
             'use strict';
             Polymer({
-                is: 'my-list',
+                is: 'my-rolecomponent',
                 properties: {
+                    read:{
+                        type:Boolean,
+
+                    },
+                    write:{
+                        type:Boolean,
+
+                    },
+                    push:{
+                        type:Boolean,
+
+                    },
+                    pull:{
+                        type:Boolean,
+                    },
                     acc: {
                         type: String,
                         notify: true,
@@ -47,21 +73,43 @@
                         type:String,
                         notify: true
                     },
-                    red:{
-                        type:String,
-                        notify:true
-                    }
 
                 },
 
-//                ready: function() {
-//                this.it = this.acc;
+
 //
-//                },
-//
-//                _acc:function(e){
-//                    this.it=[[e]];
-//                },
+                loading:function(data){
+                    console.log("loading");
+                    console.log(data);
+                },
+
+
+
+
+
+
+                _getPerms:function(item){
+                    //const perm=item.perms;
+                    console.log("TPERM");
+                    console.log(event);
+                    console.log(item);
+
+                    if(perm.charAt(0)==1){
+                        console.log("T")
+                        this.read=true
+                    }
+                    if(perm.charAt(1)==1){
+                        console.log("T")
+                        this.write=true                    }
+                    if(perm.charAt(2)==1){
+                        console.log("T")
+                        this.push=true                    }
+                    if(perm.charAt(3)==1) {
+                        console.log("T")
+                        this.push=true                    }
+                    return this
+
+                },
 
                 _findField: function(item) {
                     console.log(item);
@@ -72,17 +120,25 @@
                 },
 
                 _clicked:function(e){
-
+                    console.log("clicked");
                     console.log(e.model.__data__.item);
-                    var obj = e.model.__data__.item;
-                    var id = obj._id;
-                    var url="/"+this.tableName+"/"+id;
-//                    console.log(url);
-//                    console.log(document.cookie);
-//                    document.cookie={roleid:id}
-//                    window.location.href="/addrole";
-                    window.location.href=url;
-                }
+//                    var obj = e.model.__data__.item;
+//                    var id = obj._id;
+//                    var url="/"+this.tableName+"/"+id;
+////                    console.log(url);
+////                    console.log(document.cookie);
+////                    document.cookie={roleid:id}
+////                    window.location.href="/addrole";
+//                    window.location.href=url;
+                },
+
+//                ready: function(e) {
+//                    console.log("called");
+//                    console.log(this);
+//                    console.log(XMLHttpRequest("GET","/getRoleComponents/56decc1f898546cc6dbc8d81"));
+//
+//                },
+
 
             })
         })();
