@@ -1,0 +1,90 @@
+<link rel="import" href="/static/polymer/polymer.html">
+<link rel="import" href="/static/iron-form/iron-form.html">
+<link rel="import" href="/static/iron-ajax/iron-ajax.html">
+<link rel="import" href="/static/paper-input/paper-input.html">
+<link rel="import" href="/static/paper-item/paper-item.html">
+<link rel="import" href="/static/paper-button/paper-button.html">
+<dom-module id="my-list">
+    <style>
+        #listItem{
+            border: 1px solid #DDDDDD;
+            border-radius: 4px;
+            margin: 1px;
+        }
+    </style>
+    <template>
+
+        <div class="layout horizontal wrap" id="list">
+            <iron-ajax url={{url}} last-response='{{data}}'  auto loading='{{loading}}' method='GET'></iron-ajax>
+            <template is="dom-repeat" items="[[data]]" as="item" id="tempRepeat">
+                <div class="horizontal-section" role="listbox" on-click="_clicked" id="listItem">
+                    <paper-item >
+                        {{_findField(item)}}
+                    </paper-item>
+
+                </div>
+            </template>
+        </div>
+    </template>
+    <script>
+        (function () {
+            'use strict';
+            Polymer({
+                is: 'my-list',
+                properties: {
+                    acc: {
+                        type: String,
+                        notify: true,
+                        observer: '_acc'
+                    },
+
+                    field1: {
+                        type: String,
+                        notify: true
+                    },
+
+                    tableName:{
+                        type:String,
+                        notify: true
+                    },
+                    red:{
+                        type:String,
+                        notify:true
+                    }
+
+                },
+
+//                ready: function() {
+//                this.it = this.acc;
+//
+//                },
+//
+//                _acc:function(e){
+//                    this.it=[[e]];
+//                },
+
+                _findField: function(item) {
+                    console.log(item);
+                    if(item[this.field1]) {
+                        return item[this.field1];
+                    }
+                    return undefined
+                },
+
+                _clicked:function(e){
+
+                    console.log(e.model.__data__.item);
+                    var obj = e.model.__data__.item;
+                    var id = obj._id;
+                    var url="/"+this.tableName+"/"+id;
+//                    console.log(url);
+//                    console.log(document.cookie);
+//                    document.cookie={roleid:id}
+//                    window.location.href="/addrole";
+                    window.location.href=url;
+                }
+
+            })
+        })();
+    </script>
+</dom-module>
