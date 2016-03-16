@@ -32,19 +32,28 @@
 <%if (errmex.length>0) { %>
 <div class="alert alert-danger"><%= errmex %></div>
 <% } %>
-<div class="col-sm-1 col-sm-offset-1">
+<div></div>
+<div class="col-sm-2 col-sm-offset-0">
 
     <div class="subtitle"><h4 style="float: left">Users</h4><paper-icon-button icon="add"  onclick=addUser()></paper-icon-button></div>
     <div><my-list url="/getUserList" field1=email table-name="manageuser"></my-list></div>
 </div>
-<div class="col-sm-1 col-sm-offset-1">
+<div class="col-sm-2 col-sm-offset-1">
     <div class="subtitle"><h4 style="float: left">Roles</h4><paper-icon-button icon="add"  onclick=addRole()></paper-icon-button></div>
     <my-list url="/getRoleList" field1=name table-name="managerole"></my-list>
 </div>
+
+<div class="col-sm-2 col-sm-offset-1">
+    <div class="subtitle"><h4 style="float: left">Group</h4><paper-icon-button icon="add"  onclick=addGroup()></paper-icon-button></div>
+    <my-list url="/getGroupList" field1=name table-name="managegroup"></my-list>
+</div>
+
+
 <div class="col-sm-2 col-sm-offset-1">
     <div class="subtitle"><h4 style="float: left">Components</h4><paper-icon-button icon="add"  onclick=addComp()></paper-icon-button></div>
     <my-list url="/getComponentList" field1=name table-name="managecomponent"></my-list>
 </div>
+
 
 <script>
     function addUser(){
@@ -59,6 +68,10 @@
     function addComp(){
         var url="/addcomponent";
         window.location.href = url;
+    }
+    function addGroup(){
+        var url="/addgroup";
+        window.location.href=url;
     }
 </script>
 

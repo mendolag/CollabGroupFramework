@@ -4,6 +4,7 @@
 var User =require('./models/user');
 var Role=require('./models/role');
 var Component=require('./models/components');
+var Group=require('./models/group')
 var mongoose=require('mongoose');
 var ObjectId = mongoose.Types.ObjectId;
 
@@ -369,4 +370,59 @@ var getFullCompPerms = function (id,callback) {
     })
 }
 
+//---------------------------------------------------------------
+//Group managment
+//---------------------------------------------------------------
+exports.addNewGroup= function (name){
+    Group.findOne({'name':name},function(err, group){
+        if(err){
+            callback(err,null);
+        }
+        if (group){
+            callback(null,false);
+        }
+        else{
+            var newGroup= new Group();
+            newGroup.name=name;
+            newGroup.users=[];
+            newGroup.save(function(err){
+                if(err){
+                    callback(err,null);
+                }else{
+                    callback(null,true);
+                }
+            });
+        }
+    })
+}
 
+exports.addUserToGroup=function(gname,userid){
+
+    Group.update({'name':gname},{$pushAll:{users:[{_id:userid}]}},function(err,group){
+        if (err){
+            callback(err,null);
+        }else{
+            callback(null,group);
+        }
+    })
+};
+
+exports.removeUserFromGroup=function(gname,userid){
+    Group.update({'name':gname},{ $pull:  { users: {_id:userid} }},{upsert:true},function(err,group){
+        if(err){
+            callback(err,null);
+        }else{
+            callback(null,group);
+        }
+    })
+}
+
+exports.getAllGroups= function (req,res) {
+    Group.find({},function(err,groups){
+        if(err){
+            callback(err,null);
+        }else{
+            res.send(groups);
+        }
+    })
+}
