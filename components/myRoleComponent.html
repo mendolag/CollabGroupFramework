@@ -22,15 +22,15 @@
     <template>
 
         <div class="layout horizontal wrap" id="list">
-            <iron-ajax url={{url}} last-response='{{data}}'  auto  method='GET'></iron-ajax >
+            <iron-ajax url="/getRoleComponents/{{roleid}}" last-response='{{data}}'  auto  method='GET'></iron-ajax >
             <template is="dom-repeat" items="[[data]]" as="item" id="tempRepeat" >
                 <paper-material class="horizontal-section" role="listbox" id="listItem" >
                     {{item.component.name}}
                     <div id="" data-item="{{item}}" >
-                        <paper-checkbox checked="{{item.read}}" change="{{loading()}}">read</paper-checkbox>
-                        <paper-checkbox checked="{{item.write}}" change="{{loading()}}">write</paper-checkbox>
-                        <paper-checkbox checked="{{item.push}}">push</paper-checkbox>
-                        <paper-checkbox checked="{{item.pull}}">pull</paper-checkbox>
+                        <paper-checkbox checked="{{item.read}}" on-change>read</paper-checkbox>
+                        <paper-checkbox checked="{{item.write}}" on-change>write</paper-checkbox>
+                        <paper-checkbox checked="{{item.push}}" on-change>push</paper-checkbox>
+                        <paper-checkbox checked="{{item.pull}}" on-change>pull</paper-checkbox>
                         <!--{{_tPermissions:function(item)}}-->
                     </div>
                 </paper-material>
@@ -74,13 +74,24 @@
                         notify: true
                     },
 
+
                 },
+                listeners:{'change':'permChanged'},
 
 
 //
-                loading:function(data){
-                    console.log("loading");
-                    console.log(data);
+                permChanged:function(e){
+                    let xml = new XMLHttpRequest();
+                    const url=this.roleid;
+                    xml.open('POST', this.roleid);
+                    xml.setRequestHeader('Content-Type', 'application/json');
+                    xml.onreadystatechange = function () {
+                        if (xml.readyState == 4 && xml.status == 200) {
+                            alert(xml.responseText);
+                        }
+                    }
+                    xml.send(JSON.stringify(e.model.item));
+
                 },
 
 

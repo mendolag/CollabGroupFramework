@@ -1,4 +1,3 @@
-//sdasd
 var Liquid = (function () {
 	// Devices
 	var __peer = undefined
@@ -53,6 +52,7 @@ var Liquid = (function () {
 	]
 
 	var __defaultStatefulComponents= [
+		{relUrl: "/bower_components/observe-js/src/observe.js", ext: 'script'},
 		{relUrl: '/socket.io/socket.io.js', ext: 'script'},
 		{relUrl: '/components/peerjs/peerjs.js', ext: 'script'},
 		{relUrl: '/bower_components/es6-promise-polyfill/promise.js', ext: 'script'},
@@ -74,114 +74,114 @@ var Liquid = (function () {
 			port: 12304
 		},
 		signalingServer: {
-			host: 'localhost',
+			host: 'http://localhost',
 			port: 12305,
 			path: ''
 		},
 		multiDeviceDisable: false
 	}
 
-	var variable = function(v, value) {
-		var o = {}	
-		o[v] = value
-		socket.emit('state', o)
-	}
+	// var variable = function(v, value) {
+	// 	var o = {}	
+	// 	o[v] = value
+	// 	socket.emit('state', o)
+	// }
 
-	var localClose = function(windowId, pair, clones){
-		if(pair != undefined) {
-			socket.emit('local', {
-				type: 'pairClose',
-				device: pair.device,
-				token: pair.token,
-				windowId: pair.windowId,
-				from: __deviceId
-			})
-		}
+	// var localClose = function(windowId, pair, clones){
+	// 	if(pair != undefined) {
+	// 		socket.emit('local', {
+	// 			type: 'pairClose',
+	// 			device: pair.device,
+	// 			token: pair.token,
+	// 			windowId: pair.windowId,
+	// 			from: __deviceId
+	// 		})
+	// 	}
 
-		for(var i = 0; i < clones.length; i++) {
-			socket.emit('local', {
-				type: 'cloneClose',
-				device: clones[i].device,
-				token: clones[i].token,
-				from: __deviceId
-			})
-		}
-	}
+	// 	for(var i = 0; i < clones.length; i++) {
+	// 		socket.emit('local', {
+	// 			type: 'cloneClose',
+	// 			device: clones[i].device,
+	// 			token: clones[i].token,
+	// 			from: __deviceId
+	// 		})
+	// 	}
+	// }
 
-	var localMove = function(windowId, clones, from) {
-		for(var i = 0; i < clones.length; i++) {
-			socket.emit('local', {
-				type: 'cloneMove',
-				device: clones[i].device,
-				token: clones[i].token,
-				from: from,
-				pair: {
-					user: __user,
-					token: clones[i].token,
-					device: __deviceId,
-					windowId: windowId
-				}
-			})
-		}
-	}
+	// var localMove = function(windowId, clones, from) {
+	// 	for(var i = 0; i < clones.length; i++) {
+	// 		socket.emit('local', {
+	// 			type: 'cloneMove',
+	// 			device: clones[i].device,
+	// 			token: clones[i].token,
+	// 			from: from,
+	// 			pair: {
+	// 				user: __user,
+	// 				token: clones[i].token,
+	// 				device: __deviceId,
+	// 				windowId: windowId
+	// 			}
+	// 		})
+	// 	}
+	// }
 
-	var localNotify = function(windowId, pair) {
-		socket.emit('local', {
-			type: 'notifyClone',
-			device: pair.device,
-			token: pair.token,
-			windowId: pair.windowId,
-			from: __deviceId
-		})
-	}
+	// var localNotify = function(windowId, pair) {
+	// 	socket.emit('local', {
+	// 		type: 'notifyClone',
+	// 		device: pair.device,
+	// 		token: pair.token,
+	// 		windowId: pair.windowId,
+	// 		from: __deviceId
+	// 	})
+	// }
 
-	var moveWindow = function(windowId, device, page){
-		if(device != __deviceId) {
-			var locals = liquid.closeWindow(windowId)
+	// var moveWindow = function(windowId, device, page){
+	// 	if(device != __deviceId) {
+	// 		var locals = liquid.closeWindow(windowId)
 			
-			var from = __deviceId
-			liquid.notifyNewWindow(device, page, locals, undefined, from)
-		}
-	}
+	// 		var from = __deviceId
+	// 		liquid.notifyNewWindow(device, page, locals, undefined, from)
+	// 	}
+	// }
 
-	var cloneWindow = function(sharedId, windowId, device, page, token) {
-		var liquid_page = __windowReferences[windowId]
+	// var cloneWindow = function(sharedId, windowId, device, page, token) {
+	// 	var liquid_page = __windowReferences[windowId]
 
-		var storage = liquid_page.getStorage()
-		var pair = {
-			user: __user,
-			device: __deviceId,
-			windowId: windowId,
-			sharedId: sharedId,
-			token: token,
-			username: __user
-		}
+	// 	var storage = liquid_page.getStorage()
+	// 	var pair = {
+	// 		user: __user,
+	// 		device: __deviceId,
+	// 		windowId: windowId,
+	// 		sharedId: sharedId,
+	// 		token: token,
+	// 		username: __user
+	// 	}
 
-		var from = __deviceId
+	// 	var from = __deviceId
 
-		liquid.notifyNewWindow(device, page, {storage: storage, clones: undefined}, pair, from)
-	}
+	// 	liquid.notifyNewWindow(device, page, {storage: storage, clones: undefined}, pair, from)
+	// }
 
-	var closeWindow = function(windowId) {
-		var div = document.getElementById('draggableArea')
-		var liquid_page = __windowReferences[windowId]
+	// var closeWindow = function(windowId) {
+	// 	var div = document.getElementById('draggableArea')
+	// 	var liquid_page = __windowReferences[windowId]
 
-		var locals = liquid_page.getShared()
-		var pair = liquid_page.getPair()
+	// 	var locals = liquid_page.getShared()
+	// 	var pair = liquid_page.getPair()
 
-		locals.pair = pair
+	// 	locals.pair = pair
 
-		liquid.localClose(windowId, pair, locals.clones)
+	// 	liquid.localClose(windowId, pair, locals.clones)
 
-		div.removeChild(liquid_page)
-		delete __windowReferences[windowId]
+	// 	div.removeChild(liquid_page)
+	// 	delete __windowReferences[windowId]
 
-		for(var s in __subscriptions) {
-			delete __subscriptions[s][windowId]
-		}
+	// 	for(var s in __subscriptions) {
+	// 		delete __subscriptions[s][windowId]
+	// 	}
 
-		return locals
-	}
+	// 	return locals
+	// }
 
 	var _isLoadedDefault = function() {
 		for(var c in __defaultDeploymentComponents) {
@@ -268,6 +268,7 @@ var Liquid = (function () {
 				if(opts && opts.liquidUI) {
 					var liquidUI = document.createElement('liquid-ui')
 					liquidUI.liquidComponentUrl = componentUrl
+					liquidUI.liquidComponentType = componentName
 					component.insertBefore(liquidUI, component.firstChild);
 				}
 
@@ -429,7 +430,6 @@ var Liquid = (function () {
 		    },
 		    operation: 'clone',
 		    data: {
-		    	liquidUI: true, //TODO check when false
 		    	liquidStorage: _getComponent(fromURL).getLiquidVariablesValue()
 		    }
 	  	}
@@ -438,157 +438,91 @@ var Liquid = (function () {
 	  Liquid.sendMessage(toURL, message)
 	}
 
-	var notifyNewWindow = function(device, page, locals, pair, from) {
-		socket.emit('newWindow', {
-			device: device,
-			page: page,
-			locals: locals,
-			pair: pair,
-			from: from
-		})
-	}
+	var _pairVariable = function(fromURL, toURL) {}
 
-	var registerCloneWindow = function(pair, windowId) {
-		var device = pair.device
-		var token = pair.token
+	// var notifyNewWindow = function(device, page, locals, pair, from) {
+	// 	socket.emit('newWindow', {
+	// 		device: device,
+	// 		page: page,
+	// 		locals: locals,
+	// 		pair: pair,
+	// 		from: from
+	// 	})
+	// }
 
-		if(__registeredClones[device] == undefined) {
-			__registeredClones[device] = {}
-		}
+	// var registerCloneWindow = function(pair, windowId) {
+	// 	var device = pair.device
+	// 	var token = pair.token
 
-		__registeredClones[device][token] = windowId
-	}
+	// 	if(__registeredClones[device] == undefined) {
+	// 		__registeredClones[device] = {}
+	// 	}
 
-	var updateRegisterCloneWindow = function(from, pair) {
-		var token = pair.token
-		var windowId = __registeredClones[from][token]
+	// 	__registeredClones[device][token] = windowId
+	// }
 
-		liquid.registerCloneWindow(pair, windowId)
-	}
+	// var updateRegisterCloneWindow = function(from, pair) {
+	// 	var token = pair.token
+	// 	var windowId = __registeredClones[from][token]
+
+	// 	liquid.registerCloneWindow(pair, windowId)
+	// }
 
 	var _createUniqueId = function () {
 		__counter = __counter + 1
 		return __counter
 	}
 
-	var createUniqueToken = function() {
-		__token = __token + 1
-		return __counter
-	}
+	// var createUniqueToken = function() {
+	// 	__token = __token + 1
+	// 	return __counter
+	// }
 
-	var localStorageChange = function(v) {
-		for(var i in __windowReferences) {
-			__windowReferences[i].localStorageChange(v)
-		}
-	}
-
-	var sessionStorageChange = function(v) {
-		for(var i in __windowReferences) {
-			__windowReferences[i].sessionStorageChange(v)
-		}
-	}
-
-	var executeVariable = function(v, value) {
-		if(__executions[v] != undefined) {
-			var f = __executions[v][2]
-
-			if(__locals[f] != undefined) 
-				__locals[f](value)
-		}
-	}
-
-	var onVariableChange = function(v,value) {
-		socket.emit('change', {
-			v: v,
-			value: value
-		})
-	}
-
-	var _set = function(v, value) {
-		var tempValue = value
-
-		if(__executions[v] != undefined) {
-			var f = __executions[v][0]
-
-			if(__locals[f] != undefined) 
-				tempValue = __locals[f](value)
-		}
-
-		__state[v] = tempValue
-		onVariableChange(v, tempValue)
-	}
-
-	var _get = function(v) {
-		return __state[v]
-	}
-
-	var updatePages = function(pages) {
-		var dropdown = document.querySelector("#pagesList")
-
-		var list = [{
-			value: 0,
-			text: "Components"
-		}]
-
-		for(var p in pages) {
-			list.push({
-				value: pages[p],
-				text: pages[p]
-			})
-		}
-
-		dropdown.items = list
-	}
-
-	var addWindowButton = function(){
-		var device = document.querySelector('#deviceList')
-		var page = document.querySelector('#pagesList')
-
-		device = device.getSelected()
-		page = page.getSelected()
-
-		if(device != 0 && page != 0) 
-			liquid.notifyNewWindow(parseInt(device), page)
-	}
-
-	// var activeDraggableButton = function() {
-	// 	draggable = !draggable
-
-	// 	if(draggable) {
-	// 		$('#draggableButton').css('color', '#f66')
-	// 		addDraggableListener()
-	// 	} else {
-	// 		$('#draggableButton').css('color', 'white')
-	// 		removeDraggableListener()
+	// var localStorageChange = function(v) {
+	// 	for(var i in __windowReferences) {
+	// 		__windowReferences[i].localStorageChange(v)
 	// 	}
 	// }
 
-	// var addDraggableListener = function() {
-	// 	$('#draggableArea').on('mousedown', 'liquid-page', function(e) {
-	// 		$(this).addClass('draggable').parents().on('mousemove', function(e) {
-	// 			$('.draggable').offset({
-	// 				top: e.pageY - $('.draggable').outerHeight() / 2,
-	// 				left: e.pageX - $('.draggable').outerWidth() / 2
-	// 			}).on('mouseup', function() {
-	// 				$(this).removeClass('draggable');
-	// 			});
-	// 		});
-		
-	// 		e.preventDefault();
-	// 	}).on('mouseup', function() {
-	// 		$('.draggable').removeClass('draggable');
-	// 	});
+	// var sessionStorageChange = function(v) {
+	// 	for(var i in __windowReferences) {
+	// 		__windowReferences[i].sessionStorageChange(v)
+	// 	}
 	// }
 
-	// var removeDraggableListener = function() {
-	// 	$('#draggableArea').unbind('mousedown')
+	// var executeVariable = function(v, value) {
+	// 	if(__executions[v] != undefined) {
+	// 		var f = __executions[v][2]
+
+	// 		if(__locals[f] != undefined) 
+	// 			__locals[f](value)
+	// 	}
 	// }
 
-	var connectButton = function() {
-		if(__initialised && !__connected) {
-			socket = io()
-		}
-	}
+	// var onVariableChange = function(v,value) {
+	// 	socket.emit('change', {
+	// 		v: v,
+	// 		value: value
+	// 	})
+	// }
+
+	// var _set = function(v, value) {
+	// 	var tempValue = value
+
+	// 	if(__executions[v] != undefined) {
+	// 		var f = __executions[v][0]
+
+	// 		if(__locals[f] != undefined) 
+	// 			tempValue = __locals[f](value)
+	// 	}
+
+	// 	__state[v] = tempValue
+	// 	onVariableChange(v, tempValue)
+	// }
+
+	// var _get = function(v) {
+	// 	return __state[v]
+	// }
 
 	var usernameChange = function () {
 		var name = document.querySelector('#username').value
@@ -1180,7 +1114,24 @@ var Liquid = (function () {
 	} 
 
 	var _incomingCloneComponent = function() {
+		var fromUrl = message.from
+		var target = message.target
+		var element = target.element
 
+		if(!target.element) {
+			element = document.querySelector('body')
+		}
+
+		if(target.componentRef) {
+			// container
+		}
+
+		_loadComponent(fromUrl.type,function(){
+			_createComponent(fromUrl.type, element, {liquidUI: message.data.liquidUI}, function(componentURL, component) {
+				// component._populateStorage(message.data.liquidStorage)
+
+			})
+		})
 	}
 
 	var _incomingDeleteComponent = function(message) {
@@ -1203,7 +1154,7 @@ var Liquid = (function () {
 	// commons = exports.__load_commons()
 	// locals = __load_locals
 
-	var getPim = function() {
+	var _getPim = function() {
 		return __y
 	}
 
@@ -1218,6 +1169,7 @@ var Liquid = (function () {
 		// Components API
 		loadComponent: _loadComponent,
 		createComponent: _createComponent,
+		closeComponent: _closeComponent,
 		deleteComponent: _deleteComponent,
 		migrateComponent: _migrateComponent,
 		forkComponent: _forkComponent,
@@ -1239,6 +1191,6 @@ var Liquid = (function () {
 		setLastTouch: _setLastTouch,
 		getLastTouch: _getLastTouch,
 
-		getPim: getPim
+		getPim: _getPim
 	}
 })();

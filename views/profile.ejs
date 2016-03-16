@@ -1,6 +1,7 @@
 
 <!doctype html>
 <html>
+
 <head>
     <title>Node Authentication</title>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
@@ -8,7 +9,21 @@
     <!--<link rel="import" href="/static/polymer/polymer.html">-->
     <!--<link rel="import" href="/static/paper-icon-button/paper-icon-button.html>">-->
     <!--<link rel="import" href="/static/iron-icons/iron-icons.html">-->
-    <!--<script src="/liquid.js"></script>-->
+
+    <!--<link rel="import" href="/liquid/public/components/liquidComponents/liquid-behavior/liquid-behavior.html">-->
+    <!--<link rel="import" href="/liquid/public/components/liquidComponents/liquid-ui/liquid-ui.html">-->
+    <!--<link rel="import" href="/liquid/public/components/liquidComponents/liquid-component-migrate/liquid-component-migrate.html">-->
+
+    <!--<script src="/socket.io/socket.io.js"></script>-->
+    <!--<script src="/liquid/public/components/peerjs/peerjs.js"></script>-->
+    <!--<script src="/liquid/public/bower_components/es6-promise-polyfill/promise.js"></script>-->
+    <!--<script src="/liquid/public/bower_components/y-map/y-map.js"></script>-->
+
+    <!--<script src="/liquid/public/bower_components/yjs/y.js"></script>-->
+    <!--<script src="/liquid/public/bower_components/y-array/y-array.js"></script>-->
+
+    <!--<script src="/liquid/public/bower_components/y-memory/y-memory.js"></script>-->
+    <!--<script src="/liquid/public/components/y-liquid/y-liquid-new.js"></script>-->
     <style>
         body {padding-top: 80px; word-wrap: break-word;}
     </style>
@@ -17,20 +32,20 @@
 <%if (message.length>0) { %>
 <div class="alert alert-success"><%= message %></div>
 <% } %>
-<dic container="container">
+<div container="container">
     <div class="page-header text-center">
         <h1><span class="fa fa-anchor"></span> Profile Page</h1>
         <a href="/logout" class="btn btn-default btn-sm">Logout</a>
     </div>
     <div class="row" id="pimmino">
-         Local Information
-        <div class="col-sm-6">
-            <h3><span class="fa fa-user"></span> Local</h3>
-            <p>
-                <strong>id</strong>: <%= user._id%><br>
-                <strong>email</strong>: <%= user.email%><br>
-                <strong>role</strong>:<%= role%>
-            </p>
+         <!--Local Information-->
+        <!--<div class="col-sm-6">-->
+            <!--<h3><span class="fa fa-user"></span> Local</h3>-->
+            <!--<p>-->
+                <!--<strong>id</strong>: <%= user._id%><br>-->
+                <!--<strong>email</strong>: <%= user.email%><br>-->
+                <!--<strong>role</strong>:<%= role%>-->
+            <!--</p>-->
             <%if (role=="admin") { %>
             <div><a href="/admin" class="btn btn-default"><span class="fa fa-user"></span> Administrator page</a>
             </div>
@@ -39,22 +54,37 @@
 
         <!--</div>-->
     </div>
-</dic>
-    <!--<script src="/liquidAPI.js"></script>-->
-    <!--<script>-->
+</div>
+    </div>
+    <script src="/liquidAPI.js"></script>
+    <script>
 
-        <!--var div = document.querySelector('#pimmino')-->
+        var div = document.querySelector('#pimmino')
 
-        <!--Liquid.create({-->
-            <!--deploymentServers: ['http://localhost:8888'],-->
-            <!--stateServer: 'http://localhost:8888'-->
-        <!--}, function(){-->
-            <!--Liquid.loadComponent('playground', function(){-->
-                <!--Liquid.createComponent('playground', div, {liquidUI: true},function(){-->
-                    <!--console.log('done')-->
-                <!--})-->
-            <!--})-->
-        <!--})-->
-    <!--</script>-->
+        Liquid.create({
+            deploymentServer: {
+                port: 8888,
+                route: '/liquid',
+                host: 'http://localhost',
+            },
+
+            stateServer: {
+                port: 12304,
+                host: 'http://localhost'
+            },
+
+            signalingServer: {
+                port: 12305,
+                host: 'localhost',
+                path: '/signaling'
+            }
+        }, function(){
+            Liquid.loadComponent('playground', function(){
+                Liquid.createComponent('playground', div, {liquidUI: true},function(){
+                    console.log('done')
+                })
+            })
+        })
+    </script>
 </body>
 </html>

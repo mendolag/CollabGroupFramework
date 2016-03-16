@@ -190,6 +190,16 @@ module.exports=function(app,passport,io){
         })
     });
 
+    app.post("/managerole/:id",HFunc.isAdmin,function(req,res){
+        var roleid=req.params.id;
+        var componentid=req.body._id;
+        var perms={read:req.body.read,write:req.body.write,push:req.body.push,pull:req.body.pull}
+        console.log(req.body);
+        console.log(componentid)
+        DBfunc.updateComponentPerm(componentid,perms);
+
+    });
+
 
 
     app.get('/getRoleComponents/:id',function(req,res){

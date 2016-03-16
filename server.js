@@ -10,7 +10,7 @@ var mongoose = require('mongoose');
 var passport = require('passport');
 var flash    = require('connect-flash');
 var path     = require('path');
-//var liquid   = require("./liquid");
+var liquid   = require("./liquid");
 var morgan       = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser   = require('body-parser');
@@ -59,7 +59,9 @@ app.use(express.static(path.join(process.cwd(), 'public')))
 app.use(express.static(path.join(process.cwd(), 'public', 'applications', 'app1', 'public')))
 app.use('/static', express.static(path.join(process.cwd(), 'bower_components')))
 app.use('/mycomp', express.static(path.join(process.cwd(), 'components')))
-
+//app.use('/liquid',express.static(path.join(process.cwd(), 'liquid')))
+//app.use('/bower_components', express.static(path.join(process.cwd(), 'bower_components')))
+//app.use(xpress.static(path.join(process.cwd(), 'public', 'applications', 'app1', 'public')))
 //app.use(express.static(bower, 'html'));
 //app.use(express.static(components, 'html'));
 

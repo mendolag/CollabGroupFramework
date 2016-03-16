@@ -156,12 +156,31 @@ exports.getAllRole=function(req,res){
 }
 
 
+//to be developed
+exports.updateComponentPerm=function( compId,perms){
+
+    console.log(compId)
+    console.log(perms)
+    Role.update({'components._id':compId},{$set:{'components.$.read':perms.read, 'components.$.write':perms.write, 'components.$.push':perms.push,'components.$.pull':perms.pull}},function(err,role){
+        if(err){
+            console.log(err);
+        }else if (role){
+            console.log(role);
+        }else{
+            console.log("MERDA");
+        }
+
+
+    });
+}
+
+
 /*
 function for adding a new role in the db
  */
 exports.addRole=function(res,req,callback){
     var reqRole=req.body.role;
-    Role.findOne({'name':reqRole},function(err, role){
+    Role.update({'name':reqRole},function(err, role){
         if(err){
             callback(err,null);
         }
