@@ -15,6 +15,7 @@ var userSchema = mongoose.Schema({
     password:String,
     role: {type:objectId, ref:'Role'},
     sessionID:String
+    //groups:[{type:objectId, ref:'Group'}]
 });
 
 userSchema.plugin(passportLocalMongoose);

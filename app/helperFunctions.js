@@ -3,9 +3,6 @@
  */
 var DBfunc=require("./dbfunc");
 exports.isAdmin=function (req, res, next){
-
-
-
     console.log(req.user);
     if(req.user) {
         console.log("auth");
@@ -49,3 +46,4 @@ exports.isLoggedIn=function (req, res, next){
     console.log("not logged in");
     res.redirect('/');
 }
+

@@ -69,18 +69,18 @@ module.exports=function(app,passport,io){
         //console.log("SeSSion1:");
         //console.log( req.session)
         DBfunc.getFullUser(req.user._id,function(err,user){
-           if(err){
-               throw err
-           }
+            if(err){
+                throw err
+            }
             if(user){
-               //console.log(user.role);
+                //console.log(user.role);
 
-               res.render('profile.ejs',{
-                           user : user,
-                           role: user.role.name,
-                           message: req.flash('loginMessage')||req.flash('signupMessage')
-                       });
-           }else{
+                res.render('profile.ejs',{
+                    user : user,
+                    role: user.role.name,
+                    message: req.flash('loginMessage')||req.flash('signupMessage')
+                });
+            }else{
                 res.redirect("/");
             }
         });
@@ -143,7 +143,20 @@ module.exports=function(app,passport,io){
         //
         //    }
 
-        })
+    })
+
+
+
+
+
+
+
+
+
+
+    /*
+     Element getters
+     */
 
 
     app.get('/getUserList',function(req,res){
@@ -158,6 +171,31 @@ module.exports=function(app,passport,io){
     app.get('/getComponentList',function(req,res){
         DBfunc.getAllComponent(req,res);
     });
+
+    app.get('/getGroupList',function(req,res){
+        DBfunc.getAllGroups(req,res);
+    })
+
+
+    app.get('/getRoleComponents/:id',HFunc.isAdmin,function(req,res){
+        var id=req.params.id;
+        DBfunc.getFullRole(id,function(err,role){
+            if(err){
+                throw err;
+            }
+            if(role){
+                var comps=role.components;
+                res.send(comps);
+            }
+        })
+    });
+
+
+
+
+    /*
+     Element manager
+     */
 
     app.get("/manageuser/:id",function(req,res){
         var id=req.params.id;
@@ -175,6 +213,22 @@ module.exports=function(app,passport,io){
 
     })
 
+    app.get('/managegroup/:id',HFunc.isAdmin,function(req,res){
+        var id=req.params.id;
+        DBfunc.getFullGroup(id,function(err,group){
+            if(err){
+                throw err;
+            }else if(group){
+                res.render('groupManager.ejs',{group:group})
+            }else{
+                console.log("Not found")
+            }
+
+        })
+
+
+    })
+
     app.get("/managerole/:id",HFunc.isAdmin,function(req,res){
         //console.log(req)
         //res.header('Access-Control-Allow-Credentials', true);
@@ -183,12 +237,13 @@ module.exports=function(app,passport,io){
         //console.log(id);
         DBfunc.getFullRole(id,function(err,role){
             if(role){
-            res.render('roleManager.ejs',{role:role});}
+                res.render('roleManager.ejs',{role:role});}
             else{
                 console.log("ma perche?");
             }
         })
     });
+
 
     app.post("/managerole/:id",HFunc.isAdmin,function(req,res){
         var roleid=req.params.id;
@@ -202,41 +257,13 @@ module.exports=function(app,passport,io){
 
 
 
-    app.get('/getRoleComponents/:id',function(req,res){
-        var id=req.params.id;
-        DBfunc.getFullRole(id,function(err,role){
-            if(err){
-                throw err;
-            }
-            if(role){
-                var comps=role.components;
-                res.send(comps);
-            }
-        })
-    });
 
-    app.get('/addcomponent',function(req,res){
-        res.render('addComponent.ejs');
-    });
 
-    app.get('/addrole',HFunc.isAdmin,function(req,res){
-        res.render('addrole.ejs',{message:req.flash('roleMessage')});
-    });
+    /*
+     Element removers
+     */
 
-    app.post('/addrole',function(req,res){
-        DBfunc.addRole(res,req,function(err,saved){
-            if (err){
-                throw err;
-            }else if(saved){
-                res.render('admin.ejs',{sucmex:req.flash('success', 'role saved'),errmex:req.flash('error')});
-            }else{
-                res.redirect('addrole.ejs',{sucmex:req.flash('success'),errmex:req.flash('error', 'role exists')});
-            }
-        });
-
-    });
-
-    app.get('/remCompFromRole/:roleId/:compId',function(req,res){
+    app.get('/remCompFromRole/:roleId/:compId',HFunc.isAdmin,function(req,res){
         var role= req.params.roleId;
         var comp=req.params.compId;
         DBfunc.removeCompFromRole(role,comp,function(err,removed){
@@ -250,7 +277,35 @@ module.exports=function(app,passport,io){
 
     });
 
-    app.get('/addComp2Role/:roleId/:compId',function(req,res){
+
+
+    /*
+     Element Adders
+     */
+
+    app.get('/addrole',HFunc.isAdmin,function(req,res){
+        res.render('addrole.ejs',{message:req.flash('roleMessage')});
+    });
+
+    app.post('/addrole',HFunc.isAdmin,function(req,res){
+        DBfunc.addRole(res,req,function(err,saved){
+            if (err){
+                throw err;
+            }else if(saved){
+                res.render('admin.ejs',{sucmex:req.flash('success', 'role saved'),errmex:req.flash('error')});
+            }else{
+                res.redirect('addrole.ejs',{sucmex:req.flash('success'),errmex:req.flash('error', 'role exists')});
+            }
+        });
+
+    });
+
+
+    app.get('/addcomponent',HFunc.isAdmin,function(req,res){
+        res.render('addComponent.ejs');
+    });
+
+    app.get('/addComp2Role/:roleId/:compId',HFunc.isAdmin,function(req,res){
         var roleId=req.params.roleId;
         var compId=req.params.compId;
         DBfunc.addComponentToRole(roleId,compId,function(err,role){
@@ -265,15 +320,12 @@ module.exports=function(app,passport,io){
         })
     })
 
-
-
-    app.get('/addComp2Role/:id',function(req,res){
+    app.get('/addComp2Role/:id',HFunc.isAdmin,function(req,res){
         var rid=req.params.id;
         res.render("addCompToRole.ejs",{id:rid});
     })
 
-
-    app.post('/addcomponent',function(req,res) {
+    app.post('/addcomponent',HFunc.isAdmin,function(req,res) {
         upload(req, res, function (err) {
             if (err) {
                 return res.end("Error uploading file.");
@@ -294,10 +346,32 @@ module.exports=function(app,passport,io){
                         }
                     })
                 }
-                ;
 
             });
         });
     });
 
+
+    app.get('/addgroup',HFunc.isAdmin,function(req,res){
+        res.render('addgroup.ejs',{message:req.flash('groupMessage')});
+    });
+
+    app.post('/addgroup',HFunc.isAdmin,function(req,res){
+        var groupName=req.body.group;
+        DBfunc.addGroup(groupName,function(err,saved){
+            if (err){
+                throw err;
+            }else if (saved){
+                console.log('saved');
+                res.render('admin.ejs',{sucmex:req.flash('success', 'role saved'),errmex:req.flash('error')})
+            }else{
+                console.log('not saved');
+                res.render('addgroup.ejs',{message:req.flash('failed Goup registration')});
+            }
+        })
+    });
+
 };
+
+
+

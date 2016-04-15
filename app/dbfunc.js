@@ -177,7 +177,7 @@ exports.updateComponentPerm=function( compId,perms){
 
 
 /*
-function for adding a new role in the db
+ function for adding a new role in the db
  */
 exports.addRole=function(res,req,callback){
     var reqRole=req.body.role;
@@ -259,7 +259,7 @@ exports.addComponentToRole=function(RoleId,CompId,callback){
             console.log(role);
             callback(null,role);
         }
-})
+    })
 }
 
 
@@ -373,7 +373,7 @@ var getFullCompPerms = function (id,callback) {
 //---------------------------------------------------------------
 //Group managment
 //---------------------------------------------------------------
-exports.addNewGroup= function (name){
+exports.addGroup= function (name,callback){
     Group.findOne({'name':name},function(err, group){
         if(err){
             callback(err,null);
@@ -396,7 +396,7 @@ exports.addNewGroup= function (name){
     })
 }
 
-exports.addUserToGroup=function(gname,userid){
+exports.addUserToGroup=function(gname,userid,callback){
 
     Group.update({'name':gname},{$pushAll:{users:[{_id:userid}]}},function(err,group){
         if (err){
@@ -417,7 +417,42 @@ exports.removeUserFromGroup=function(gname,userid){
     })
 }
 
-exports.getAllGroups= function (req,res) {
+exports.getGroup=function(gname,callback){
+    Group.findOne({'name':gname},function(err,group){
+        if(err){
+            callback(err,null);
+        }else{
+            callback(null,group);
+        }
+    })
+}
+
+exports.getFullGroup=function(groupID,callback){
+    Group.findById(groupID).populate({path:'users.user'}).exec(function(err,group){
+        if(err){
+            callback(err,null);
+        }else{
+            callback(null,group);
+        }
+    });
+}
+
+exports.getAllUserNotInGroup=function(groupID,callback){
+    Group.findOById(groupID,function(err,group){
+        if (err){callback(err,null)}
+        else if(group){
+        Users.find({_id:{$nin:group.users}},function(err,users){
+            if (err){
+                callback(err,null);
+            }else{
+                callback(null,users);
+            }
+        })
+        }
+    })
+}
+
+exports.getAllGroups= function(req,res,callback) {
     Group.find({},function(err,groups){
         if(err){
             callback(err,null);
@@ -425,4 +460,11 @@ exports.getAllGroups= function (req,res) {
             res.send(groups);
         }
     })
-}
+};
+
+exports.getGroupOfUser=function(id,callback){
+    Group.find({'users.id':id},function(err, groups){
+        if (err){callback(err,null)}
+        else{callback(null,groups)}
+    })
+};
