@@ -6,19 +6,45 @@
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
     <link rel="import" href="/static/webcomponentsjs/webcomponents-lite.min.js">
     <link rel="import" href="/static/polymer/polymer.html">
+    <link rel="import" href="/static/paper-icon-button/paper-icon-button.html">
     <link rel="import" href="/static/paper-toolbar/paper-toolbar.html">
+    <link rel="import" href="/static/iron-icons/iron-icons.html">
+    <link rel="import" href="/static/iron-ajax/iron-ajax.html">
+    <link rel="import" href="/static/iron-ajax/iron-ajax.html">
+    <link rel="import" href="/static/paper-material/paper-material.html">
     <!--<link rel="import" hrer="/mycomp/...">-->
     <style>
-        body {padding-top:80px;}
+        paper-toolbar{font-size:2px}
     </style>
 </head>
 <body>
 <paper-toolbar class="toolbar">
     <paper-icon-button icon="arrow-back" onclick=goAdmin()></paper-icon-button>
     <div class="title">Manage group <%=group.name%></div>
+    <paper-icon-button icon="add"  onclick=addUser()></paper-icon-button>
 </paper-toolbar>
 <div class="container">
     <div class="jumbotron text-center">
+        <div class="layout horizontal wrap" id="list">
+            <iron-ajax url="/getUsersInGroup/<%=group._id%>" last-response='{{data}}'  auto  method='GET'></iron-ajax >
+            <template is="dom-repeat" items="[[data]]" as="item" id="tempRepeat" >
+                <!--<paper-material class="horizontal-section" role="listbox" id="listItem" >-->
+                    {{item.email}}
+                <!--</paper-material>-->
+            </template>
+        </div>
     </div>
 </div>
 </body>
+<script>
+    function goAdmin(){
+        window.location.href="/admin";
+    }
+
+
+    function addUser(){
+        var url="/addUserToGroup/<%=group._id%>";
+        window.location.href = url;
+    };
+
+</script>

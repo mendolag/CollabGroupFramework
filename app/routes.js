@@ -105,7 +105,7 @@ module.exports=function(app,passport,io){
     });
 
     app.post('/signupThird',function(req,res){
-        DBfunc.registerUser(req,res,req.body.email);
+        DBfunc.registerUser(req,res,req.body.username);
     });
 
     //app.post('/signupThird',passport.authenticate('local-signupThird',{
@@ -173,9 +173,41 @@ module.exports=function(app,passport,io){
     });
 
     app.get('/getGroupList',function(req,res){
-        DBfunc.getAllGroups(req,res);
+        DBfunc.getAllGroups(function(err,groups){
+            if(err){throw err}
+            else{
+                res.send(groups);
+            }
+        });
+    });
+
+    app.get('/getUsersInGroup/:id',HFunc.isAdmin,function(req,res){
+        console.log("getUSERS");
+        var id=req.params.id;
+        DBfunc.getGroupUsers(id, function(err,users){
+            if(err){
+                throw err;
+            }else{
+                console.log("get");
+                console.log(users);
+                res.send(users);
+            }
+        })
     })
 
+    app.get('/getUserNotInGroup/:id',HFunc.isAdmin,function (req,res){
+
+        var id=req.params.id;
+        console.log("ID:" +id);
+        DBfunc.getAllUserNotInGroup(id,function(err,users){
+            if (err){
+                throw err;
+            }else{
+                res.send(users);
+            }
+        });
+
+    });
 
     app.get('/getRoleComponents/:id',HFunc.isAdmin,function(req,res){
         var id=req.params.id;
@@ -371,7 +403,23 @@ module.exports=function(app,passport,io){
         })
     });
 
-};
+    app.get('/addUserToGroup/:id',HFunc.isAdmin,function (req,res) {
+        var gid=req.params.id;
+        res.render('addUserToGroup.ejs',{id:gid});
+    });
 
+    app.get('/addUser2Group/:gId/:uId',HFunc.isAdmin,function(req,res){
+        var gid=req.params.gId;
+        var uid=req.params.uId;
+        DBfunc.addUserToGroup(gid,uid,function (err,group) {
+            if(err){
+                throw err;}
+            else {
+                res.redirect('/managegroup/'+gid);
+            }
+
+        })
+    });
+};
 
 
