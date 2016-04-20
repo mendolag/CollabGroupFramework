@@ -72,8 +72,9 @@ exports.getFullUser=function(id,callback){
     })
 }
 
-exports.registerUser=function(req,res,email){
+exports.registerUser=function(req,res,username){
     var password=req.body.password;
+    var self=this;
     if(req.body.password2!=password){
         res.render('signupThird.ejs', {
             message: req.flash('signupMessage','password Missmatch')
@@ -81,37 +82,46 @@ exports.registerUser=function(req,res,email){
         console.log('password Missmatch');
     }
     else {
-        User.findOne({'email': email}, function (err, user) {
+        User.findOne({'username': username}, function (err, user) {
             //check if user has email
             if (user) {
-                res.render('signupThird.ejs', req.flash('signupMessage', 'email already registered')
+                res.render('signupThird.ejs', req.flash('signupMessage', 'username already registered')
                 );
-                console.log("email already registered");
+                console.log("username already registered");
             } else {
                 console.log("registration");
                 //create new user
                 var newUser = new User();
-
-                //set the user's credentials
-                newUser.email = email;
+                newUser.username = username;
                 newUser.password = newUser.generateHash(password);
-                newUser.
-                    role = req.body.role;
-                // save the user
-                newUser.save(function (err) {
-                    if (err) {
-                        throw err;
-                        console.log(err);
-                    }
-                    res.render('profile.ejs', {
-                        user : req.user})
-                    req.flash('signupMessage', "registration Complete");
-                    console.log("registration Complete");
+                //set the user's credentials
+                var role="guest"
+                if(req.body.role!=undefined){
+                    role=req.body.role;
+                }
+                self.getRoleId(role,function(err,roleId) {
+                    newUser.role = roleId;
+                    // save the user
+                    newUser.save(function (err) {
+                        if (err) {
+                            throw err;
+                            console.log(err);
+                        }
+                        self.getRole(req.user.role,function (err,role) {
+                            res.render('profile.ejs', {
+                                user: req.user,role:role.name,message:"registration Complete"
+                            })
+                        })
+
+                        //req.flash('message', "registration Complete");
+                        console.log("registration Complete");
+                    });
                 });
             }
         });
     }
 }
+
 
 exports.getUserBySess=function(sid,callback){
     User.findOne({sessionID:sid}).populate({path:'role'}).exec(function(err,user){
@@ -145,6 +155,7 @@ exports.removeSession=function(sid){
 //--------------------------------------------
 
 
+
 exports.getAllRole=function(req,res){
     Role.find({}, function (error, role) {
         if(error){
@@ -167,8 +178,6 @@ exports.updateComponentPerm=function( compId,perms){
             console.log(err);
         }else if (role){
             console.log(role);
-        }else{
-            console.log("MERDA");
         }
 
 
@@ -269,11 +278,27 @@ exports.getRoleId=function(roleName,callback){
     Role.findOne({'name':roleName},function(err,role){
         if(err){
             callback(err,null);
-        } else{
+        } else if(role){
             callback(null,role._id);
-        }
+        }else{callback(null,null)}
     });
 };
+
+var getRoleOrGuest =function(roleName,callback){
+    this.getRoleId(roleName,function(err,roleID){
+        if(err||(roleID==null)){
+            this.getRoleId("guest",function(err,guestID){
+                if(err){
+                    callback(err,null);
+                }else{
+                    callback(null,guestID);
+                }
+            })
+        }else{
+            callback(null,roleID);
+        }
+    })
+}
 
 exports.getFullRole=function(roleID,callback){
 
@@ -396,9 +421,9 @@ exports.addGroup= function (name,callback){
     })
 }
 
-exports.addUserToGroup=function(gname,userid,callback){
+exports.addUserToGroup=function(groupid,userid,callback){
 
-    Group.update({'name':gname},{$pushAll:{users:[{_id:userid}]}},function(err,group){
+    Group.update({'_id':groupid},{$pushAll:{users:[{_id:new ObjectId(userid)}]}},function(err,group){
         if (err){
             callback(err,null);
         }else{
@@ -427,8 +452,10 @@ exports.getGroup=function(gname,callback){
     })
 }
 
+
+
 exports.getFullGroup=function(groupID,callback){
-    Group.findById(groupID).populate({path:'users.user'}).exec(function(err,group){
+    Group.findById(groupID).populate({path:'users'}).exec(function(err,group){
         if(err){
             callback(err,null);
         }else{
@@ -437,11 +464,21 @@ exports.getFullGroup=function(groupID,callback){
     });
 }
 
+exports.getGroupUsers=function(groupID,callback){
+    this.getFullGroup(groupID,function(err,group){
+        if(err){
+            callback(err,null);
+        }else{
+            callback(null,group.users);
+        }
+    })
+}
+
 exports.getAllUserNotInGroup=function(groupID,callback){
-    Group.findOById(groupID,function(err,group){
+    Group.findById(groupID,function(err,group){
         if (err){callback(err,null)}
         else if(group){
-        Users.find({_id:{$nin:group.users}},function(err,users){
+        User.find({_id:{$nin:group.users}},function(err,users){
             if (err){
                 callback(err,null);
             }else{
@@ -452,12 +489,12 @@ exports.getAllUserNotInGroup=function(groupID,callback){
     })
 }
 
-exports.getAllGroups= function(req,res,callback) {
+exports.getAllGroups= function(callback) {
     Group.find({},function(err,groups){
         if(err){
             callback(err,null);
         }else{
-            res.send(groups);
+            callback(null,groups);
         }
     })
 };
