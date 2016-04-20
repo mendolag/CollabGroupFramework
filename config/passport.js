@@ -26,12 +26,12 @@ module.exports=function(passport){
     //Local login
 
     passport.use('local-login',new LocalStrategy({
-        usernameField:'email',
+        usernameField:'username',
         passwordField:'password',
         passReqToCallback:true
     },
-    function(req, email, password, done){
-        User.findOne({'email':email},function(err, user){
+    function(req, username, password, done){
+        User.findOne({'username':username},function(err, user){
             if(err) {
                 return done(err);
             }
@@ -59,14 +59,14 @@ module.exports=function(passport){
 
     //Function to signup
     passport.use('local-signup', new LocalStrategy({
-        usernameField:'email',
+        usernameField:'username',
         passwordField:'password',
         passReqToCallback:true
     },
-    function(req, email, password, done){
+    function(req, username, password, done){
         process.nextTick(function(){
 
-            User.findOne({'email':email}, function(err, user){
+            User.findOne({'username':username}, function(err, user){
                 if(err){
                     return done(err);
                 }
@@ -76,12 +76,12 @@ module.exports=function(passport){
                 }
                 //check if user has email
                 if(user){
-                    console.log('e-mail taken');
-                    return done(null, false, req.flash('signupMessage','That email is already taken.'));
+                    console.log('username taken');
+                    return done(null, false, req.flash('signupMessage','That username is already taken.'));
                 }else {
                     //create new user
                     var newUser = new User();
-                    newUser.email=email;
+                    newUser.username=username;
                     newUser.password=newUser.generateHash(password);
 
                     //User.populate("role","name -_id").find({'name':"admin"}).lean().exec(function (err,user) {
@@ -110,11 +110,14 @@ module.exports=function(passport){
                                 if(admin){
                                     console.log("saving guest");
                                     DBFunc.getRoleId("guest",function(err,guestRoleId){
+                                        if(err){throw err}
                                         newUser.role=guestRoleId;
                                         newUser.save(function(err){
                                             if(err){
+                                                console.log("errore")
                                                 throw err;
                                             }
+                                            console.log("fatto")
                                             return done(null, newUser, req.flash('signupMessage', 'Registration successful'))});
                                     });
                                 }else{
