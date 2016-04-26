@@ -159,20 +159,20 @@ module.exports=function(app,passport,io){
      */
 
 
-    app.get('/getUserList',function(req,res){
+    app.get('/getUserList',HFunc.isAdmin,function(req,res){
         DBfunc.getAllUser(req,res);
     });
 
 
-    app.get('/getRoleList',function(req,res){
+    app.get('/getRoleList',HFunc.isAdmin,function(req,res){
         DBfunc.getAllRole(req,res);
     });
 
-    app.get('/getComponentList',function(req,res){
+    app.get('/getComponentList',HFunc.isAdmin,function(req,res){
         DBfunc.getAllComponent(req,res);
     });
 
-    app.get('/getGroupList',function(req,res){
+    app.get('/getGroupList',HFunc.isAdmin,function(req,res){
         DBfunc.getAllGroups(function(err,groups){
             if(err){throw err}
             else{
@@ -229,7 +229,7 @@ module.exports=function(app,passport,io){
      Element manager
      */
 
-    app.get("/manageuser/:id",function(req,res){
+    app.get("/manageuser/:id",HFunc.isAdmin,function(req,res){
         var id=req.params.id;
         console.log("MANAGEUSER");
         DBfunc.getFullUser(id,function(err,user){
@@ -278,7 +278,7 @@ module.exports=function(app,passport,io){
 
 
     app.post("/managerole/:id",HFunc.isAdmin,function(req,res){
-        var roleid=req.params.id;
+        //var roleid=req.params.id;
         var componentid=req.body._id;
         var perms={read:req.body.read,write:req.body.write,push:req.body.push,pull:req.body.pull}
         console.log(req.body);
@@ -308,6 +308,20 @@ module.exports=function(app,passport,io){
 
 
     });
+
+    app.get('/remUserFromGroup/:groupId/:userId',HFunc.isAdmin,function(req,res){
+        var groupId=req.params.groupId;
+        var userId=req.params.userId;
+        DBfunc.removeUserFromGroup(groupId,userId,function (err,group) {
+            if(err){
+                throw err;
+            }else{
+                res.redirect('/manageGroup/'+groupId);
+            }
+        })
+        
+        
+    })
 
 
 
@@ -405,6 +419,8 @@ module.exports=function(app,passport,io){
 
     app.get('/addUserToGroup/:id',HFunc.isAdmin,function (req,res) {
         var gid=req.params.id;
+        console.log("ADDUSER");
+        console.log(req);
         res.render('addUserToGroup.ejs',{id:gid});
     });
 

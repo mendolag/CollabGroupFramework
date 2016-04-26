@@ -432,14 +432,29 @@ exports.addUserToGroup=function(groupid,userid,callback){
     })
 };
 
-exports.removeUserFromGroup=function(gname,userid){
-    Group.update({'name':gname},{ $pull:  { users: {_id:userid} }},{upsert:true},function(err,group){
+exports.removeUserFromGroup=function(groupid,userid,callback){
+    Group.update({'_id':groupid},{ $pull:  { 'users': userid }},{upsert:true},function(err,group){
         if(err){
             callback(err,null);
         }else{
+            console.log("REMOVE USER FROM GROUP");
+            console.log(group.name);
             callback(null,group);
+
         }
     })
+    // Group.findById(groupid,function(err,group){
+    //     if(err){
+    //         callback(err,null);
+    //     }
+    //     else{
+    //         group.users.$pull(userid);
+    //                 console.log("REMOVE USER FROM GROUP");
+    //                 console.log(group.name);
+    //         callback(null,group);
+    //     }
+    // })
+
 }
 
 exports.getGroup=function(gname,callback){

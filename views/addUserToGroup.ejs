@@ -5,18 +5,43 @@
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
     <link rel="import" href="/static/webcomponentsjs/webcomponents-lite.min.js">
+    <link rel="import" href="/static/paper-icon-button/paper-icon-button.html">
+    <link rel="import" href="/static/paper-toolbar/paper-toolbar.html">
+    <link rel="import" href="/static/iron-icons/iron-icons.html">
     <link rel="import" href="/static/polymer/polymer.html">
     <link rel="import" href="/mycomp/mylist.html">
     <style>
-        body {padding-top:80px;}
+        #list{
+            margin:50px;
+        }
     </style>
 </head>
 <body>
+<paper-toolbar class="toolbar">
+    <paper-icon-button icon="arrow-back" onclick=goAdmin()></paper-icon-button>
+    <div class="title">Select user to add to the group</div>
+</paper-toolbar>
 <div class="container">
-    <div class="jumbotron text-center">
-        <h4>Select user to add <%=id%></h4>
-        <my-list url="/getUserNotInGroup/<%=id%>" field1=email table-name="addUser2Group/<%=id%>"></my-list>
+    <div class=" text-center" id="list">
+        <my-list url="/getUserNotInGroup/<%=id%>" field1=username table-name="addUser2Group/<%=id%>"></my-list>
     </div>
 </div>
+
 </body>
 
+
+<script>
+    function htmlDecode(input){
+        var e = document.createElement('div');
+        e.innerHTML = input;
+        return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
+    }
+
+
+    function goAdmin(){
+        var gid  = JSON.parse(htmlDecode("<%= JSON.stringify(id) %>"));
+        var url="/manageGroup/"+ gid  ;
+        console.log(url);
+        window.location.href=url;
+    }
+</script>

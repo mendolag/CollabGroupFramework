@@ -1,0 +1,120 @@
+<link rel="import" href="/static/polymer/polymer.html">
+<link rel="import" href="/static/iron-form/iron-form.html">
+<link rel="import" href="/static/iron-ajax/iron-ajax.html">
+<link rel="import" href="/static/paper-input/paper-input.html">
+<link rel="import" href="/static/paper-item/paper-item.html">
+<link rel="import" href="/static/iron-icons/iron-icons.html">
+<link rel="import" href="/static/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="/static/paper-button/paper-button.html">
+<dom-module id="my-list-button">
+    <style>
+
+        #listItem{
+            border: 1px solid #DDDDDD;
+            border-radius: 4px;
+            margin: 1px;
+            width: 80%;
+            position:inherit;
+            float:left;
+
+        }
+        /*paper-icon-button{*/
+            /*max-resolution: 5px;*/
+            /*float:left;*/
+        /*}*/
+        template{position: inherit;
+        background-color: #00b8d4}
+    </style>
+    <template>
+
+        <div id="list" onload="_hideButton()">
+            <iron-ajax url={{url}} last-response='{{data}}'  auto loading='{{loading}}' method='GET'></iron-ajax>
+            <template is="dom-repeat" items="[[data]]" as="item" >
+                <paper-item >
+                <div role="listbox" on-tap="_clicked" id="listItem">
+
+                        {{_findField(item)}}
+
+                </div>
+                    <paper-icon-button id="button" icon={{icon}} on-tap="_buttonClick"></paper-icon-button>
+                    </paper-item>
+
+
+
+            </template>
+        </div>
+    </template>
+    <script>
+
+
+        (function () {
+            'use strict';
+            Polymer({
+                is: 'my-list-button',
+                properties: {
+                    acc: {
+                        type: String,
+                        notify: true,
+                        observer: '_acc'
+                    },
+
+                    field1: {
+                        type: String,
+                        notify: true
+                    },
+
+                    tableName:{
+                        type:String,
+                        notify: true
+                    },
+                    icon:{
+                        type:String,
+                        notify:true
+                    },
+                    buttonurl:{
+                        type:String,
+                        notify: true
+
+                    }
+
+                },
+
+                _hideButton:function(){
+                    if(icon=="none"){
+                    var elem = document.getElementById('button');
+                    elem.parentNode.removeChild(elem);
+                    return false;}
+                },
+
+
+
+                _findField: function(item) {
+                    console.log(item);
+                    if(item[this.field1]) {
+                        return item[this.field1];
+                    }
+                    return undefined
+                },
+
+                _buttonClick: function(e){
+                    var obj = e.model.__data__.item;
+                    var id=obj._id;
+                    var url = "/"+this.buttonurl+"/"+id;
+                    console.log(url);
+                    window.location.href=url;
+
+                },
+
+                _clicked:function(e){
+                    var obj = e.model.__data__.item;
+                    var id = obj._id;
+                    var url="/"+this.tableName+"/"+id;
+                    window.location.href=url;
+                }
+
+
+
+            })
+        })();
+    </script>
+</dom-module>
