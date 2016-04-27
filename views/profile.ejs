@@ -6,6 +6,7 @@
     <title>Node Authentication</title>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/style/common.css">
     <!--<link rel="import" href="/static/polymer/polymer.html">-->
     <!--<link rel="import" href="/static/paper-icon-button/paper-icon-button.html>">-->
     <!--<link rel="import" href="/static/iron-icons/iron-icons.html">-->
@@ -25,66 +26,73 @@
     <!--<script src="/liquid/public/bower_components/y-memory/y-memory.js"></script>-->
     <!--<script src="/liquid/public/components/y-liquid/y-liquid-new.js"></script>-->
     <style>
-        body {padding-top: 80px; word-wrap: break-word;}
+        body {padding: 10px; word-wrap: break-word;}
+        h1{margin: 10px}
+        paper-toolbar.toolbar {
+            margin: 1px
+            --paper-toolbar-background: #334980;
+            --paper-toolbar-title: {
+                font-style: italic;
+                font-weight: bold;
+            };
+        }
     </style>
 </head>
 <body>
 <%if (message.length>0) { %>
 <div class="alert alert-success"><%= message %></div>
 <% } %>
-<div container="container">
-    <div class="page-header text-center">
-        <h1><span class="fa fa-anchor"></span> Profile Page</h1>
-        <a href="/logout" class="btn btn-default btn-sm">Logout</a>
-    </div>
-    <div class="row" id="pimmino">
-         <!--Local Information-->
-        <!--<div class="col-sm-6">-->
-            <!--<h3><span class="fa fa-user"></span> Local</h3>-->
-            <!--<p>-->
-                <!--<strong>id</strong>: <%= user._id%><br>-->
-                <!--<strong>email</strong>: <%= user.email%><br>-->
-                <!--<strong>role</strong>:<%= role%>-->
-            <!--</p>-->
-            <%if (role=="admin") { %>
-            <div><a href="/admin" class="btn btn-default"><span class="fa fa-user"></span> Administrator page</a>
-            </div>
+<paper-toolbar class="toolbar">
+    <a href="/logout" ><paper-icon-button icon="arrow-back"></paper-icon-button></a>
+    <div class="title">Welcome <%=user.username%></div>
+    <%if (role=="admin") { %>
+    <a href="/admin" ><paper-icon-button icon="supervisor-account"  ></paper-icon-button></a>
+    <% } %>
+</paper-toolbar>
+<div class="row" id="pimmino">
+    <!--Local Information-->
+    <!--<div class="col-sm-6">-->
+    <!--<h3><span class="fa fa-user"></span> Local</h3>-->
+    <!--<p>-->
+    <!--<strong>id</strong>: <%= user._id%><br>-->
+    <!--<strong>email</strong>: <%= user.email%><br>-->
+    <!--<strong>role</strong>:<%= role%>-->
+    <!--</p>-->
 
-            <!--<% } %>-->
 
-        <!--</div>-->
-    </div>
+    <!--</div>-->
 </div>
-    </div>
-    <script src="/liquidAPI.js"></script>
-    <script>
+</div>
+</div>
+<script src="/liquidAPI.js"></script>
+<script>
 
-        var div = document.querySelector('#pimmino')
+    var div = document.querySelector('#pimmino')
 
-        Liquid.create({
-            deploymentServer: {
-                port: 8888,
-                route: '/liquid',
-                host: 'http://localhost',
-            },
+    Liquid.create({
+        deploymentServer: {
+            port: 8888,
+            route: '/liquid',
+            host: 'http://localhost',
+        },
 
-            stateServer: {
-                port: 12304,
-                host: 'http://localhost'
-            },
+        stateServer: {
+            port: 12304,
+            host: 'http://localhost'
+        },
 
-            signalingServer: {
-                port: 12305,
-                host: 'localhost',
-                path: '/signaling'
-            }
-        }, function(){
-            Liquid.loadComponent('playground', function(){
-                Liquid.createComponent('playground', div, {liquidUI: true},function(){
-                    console.log('done')
-                })
+        signalingServer: {
+            port: 12305,
+            host: 'localhost',
+            path: '/signaling'
+        }
+    }, function(){
+        Liquid.loadComponent('playground', function(){
+            Liquid.createComponent('playground', div, {liquidUI: true},function(){
+                console.log('done')
             })
         })
-    </script>
+    })
+</script>
 </body>
 </html>

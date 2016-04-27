@@ -1,0 +1,7 @@
+paper-toolbar.toolbar {
+    --paper-toolbar-background: #334980;
+    --paper-toolbar-title: {
+        font-style: italic;
+        font-weight: bold;
+    };
+}
