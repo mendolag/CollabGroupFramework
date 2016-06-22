@@ -1,8 +1,9 @@
 /**
  * Created by josmendola on 09/01/16.
  */
-var mongoose = require('mongoose');
+var mongoose = require('mongoose')
 var Schema=mongoose.Schema,
+    SchemaTypes=Schema.Types,
     objectId=Schema.ObjectId,
     passportLocalMongoose = require('passport-local-mongoose');
 
@@ -14,7 +15,8 @@ var userSchema = mongoose.Schema({
     username:String,
     password:String,
     role: {type:objectId, ref:'Role'},
-    sessionID:String
+    sessionID:String,
+    deviceID:String
     //groups:[{type:objectId, ref:'Group'}]
 });
 

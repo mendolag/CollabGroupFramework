@@ -6,6 +6,7 @@ var multer=require("multer");
 var HFunc=require("./helperFunctions");
 var User=require("./models/user");
 
+
 var storage =   multer.diskStorage({
 
     destination: function (req, file, callback) {
@@ -24,9 +25,9 @@ User.serializeUser();
 
 module.exports=function(app,passport,io){
 
-    io.on('connection',function(socket){
-        console.log("user connected");
-    });
+    // io.on('connection',function(socket){
+    //     console.log("user connected");
+    // });
 
     app.get('/socket.io/*',function(req, res){
         res.redirect("127.0.0.1:3000"+ req.url);
@@ -120,15 +121,12 @@ module.exports=function(app,passport,io){
         res.redirect('/');
     });
 
-    //Administar page rendering
+    //Administer page rendering
     //app.get('/administrator',isAdmin,function(res,req){
     //    res.render('admin.ejs');
     //});
     app.get('/admin',HFunc.isAdmin,function(req,res){
-        console.log(req.user);
         req.session.touch();
-        console.log("SeSSion2:");
-        console.log( req.session)
         passport.serializeUser(req.user._id,function(err,user){
             res.render('admin.ejs',{sucmex:req.flash('succes'),errmex:req.flash('error'),user:user});
         });
@@ -143,7 +141,7 @@ module.exports=function(app,passport,io){
         //
         //    }
 
-    })
+    });
 
 
 
@@ -319,8 +317,8 @@ module.exports=function(app,passport,io){
                 res.redirect('/manageGroup/'+groupId);
             }
         })
-        
-        
+
+
     })
 
 
@@ -436,6 +434,90 @@ module.exports=function(app,passport,io){
 
         })
     });
+    
+    app.get('/addGroupManager/:gID',HFunc.isAdmin,function(req,res){
+        var gID=req.params.gID;
+        res.render('addGroupManager',{id:gID});
+    })
+
+    app.get('/addGroupManager/:gID/:uID',HFunc.isAdmin,function (req,res) {
+        var gID=req.params.gID;
+        var uID=req.params.uID;
+        DBfunc.addGroupManager(gID,uID,function(err,group){
+            if(err){
+                res.statusCode=500;
+                res.send();
+            }else{
+                res.redirect('/managegroup/'+gID);
+            }
+
+        })
+
+    })
+    
+    
+    
+    /*
+     * FWConnector API route
+     */
+
+    app.put('/registerUserDevice',HFunc.isLoggedIn,function (req,res) {
+        var user=req.user;
+        var deviceId=req.body.deviceID;
+        console.log(req.body);
+        DBfunc.updateUserDeviceId(user._id,deviceId,function(err,updated){
+            if(err){
+                res.statusCode=500;
+                res.statusMessage=err;
+                res.send();
+            }else if(updated){
+                res.statusCode=201;
+                res.statusMessage="Device id updated";
+                res.send();
+            }else{
+                res.statusCode=500;
+                res.statusMessage="Database error";
+                res.send();
+            }
+        });
+    });
+
+
+    app.get('/guest',function(req,res){
+        res.render('guest.ejs');
+        
+    });
+
+    app.put('/registerGuestDevice',function(req,res){
+        console.log("registerGuestToGroup");
+        var guest=req.body;
+        console.log(guest);
+        DBfunc.addGuestToGroup(guest.groupID,guest.deviceID,function(err,success){
+            if(err){
+                res.statusCode=500;
+                res.statusMessage=err;
+                console.log(err);
+                res.send();
+            }else if(success){
+                res.statusCode=201;
+                console.log(success);
+                res.statusMessage="Guest registered to group"
+                res.send();
+            }else{
+                res.statusCode=500;
+                res.statusMessage="Unkown error";
+                console.log(err);
+            }
+        })
+
+    })
+
+
+
+
+
+
+
 };
 
 

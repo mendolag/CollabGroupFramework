@@ -10,13 +10,17 @@ var mongoose = require('mongoose');
 var passport = require('passport');
 var flash    = require('connect-flash');
 var path     = require('path');
-var liquid   = require("./liquid");
+
 var morgan       = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser   = require('body-parser');
 var session      = require('express-session');
 var http         = require('http').Server(app);
 var io           = require('socket.io')(http);
+var liquidListener=require('./app/liquidListener.js');
+// Put this statement near the top of your module
+var bodyParser = require('body-parser');
+
 
 
 var configDB = require('./config/database.js');
@@ -44,12 +48,16 @@ app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
 app.use(flash()); // use connect-flash for flash messages stored in session
 
+// Put these statements before you define any routes.
+app.use(bodyParser.urlencoded());
+app.use(bodyParser.json());
+
 //socket connection initialization
 
 
-http.listen(3000,function(){
- console.log('socket open on port *3000')
-})
+// http.listen(3000,function(){
+//  console.log('socket open on port *3000')
+// })
 // routes ======================================================================
 require('./app/routes.js')(app, passport,io); // load our routes and pass in our app and fully configured passport
 
@@ -65,6 +73,8 @@ app.use('/style',express.static(path.join(process.cwd(), 'views/style')));
 //app.use(xpress.static(path.join(process.cwd(), 'public', 'applications', 'app1', 'public')))
 //app.use(express.static(bower, 'html'));
 //app.use(express.static(components, 'html'));
+
+
 
 
 console.log('The magic happens on port ' + port);

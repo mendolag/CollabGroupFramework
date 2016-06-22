@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+<head>
+    <title>Add Component</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <!--    <script src="../bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>-->
+    <!--<link rel="import" href="/static/polymer/polymer.html">-->
+    <!--<link rel="import" hrer="/mycomp/...">-->
+    <style>
+
+    </style>
+</head>
+<body>
+<div id="guestContainer"></div>
+<script src="/liquidAPI.js"></script>
+<script src="/GroupFramework.js"></script>
+<script>
+
+    var div = document.querySelector('#guestContainer');
+    //
+    //    Liquid.create({
+    //        deploymentServer: {
+    //            port: 8888,
+    //            route: '/liquid',
+    //            host: 'http://localhost',
+    //        },
+    //
+    //        stateServer: {
+    //            port: 12304,
+    //            host: 'http://localhost'
+    //        },
+    //
+    //        signalingServer: {
+    //            port: 12305,
+    //            host: 'localhost',
+    //            path: '/signaling'
+    //        }
+    //    }, function(){
+    //        Liquid.loadComponent('playground', function(){
+    //            Liquid.createComponent('playground', div, {liquidUI: true},function(){
+    //                console.log('done')
+    //            })
+    //        })
+    //    })
+
+
+    Liquid.create({
+        deploymentServers: [{
+            host: 'http://localhost',
+            port: 8888,
+        }],
+        stateServer: {
+            host: 'http://localhost',
+            port: 12304
+        },
+        signalingServer: {
+            host: 'localhost',
+            port: 12305,
+            path: '/signaling'
+        }
+    }).then(function() {
+        Liquid.createComponent('migrate', div, {'liquidui': false})
+    }).then(function() {
+        Liquid.loadAndCreateComponent('gallery', div, {'liquidui': true})
+    })
+
+    FWConnector.registerGuestDeviceID();
+</script>
+</body>

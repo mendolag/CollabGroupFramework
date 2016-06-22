@@ -8,6 +8,7 @@ var Group=require('./models/group')
 var mongoose=require('mongoose');
 var ObjectId = mongoose.Types.ObjectId;
 
+
 exports.init=function(req,res) {
 
     Role.findOne({'name': "admin"}, function (err, role) {
@@ -123,11 +124,64 @@ exports.registerUser=function(req,res,username){
 }
 
 
+
+exports.updateUserDeviceId=function(userID,deviceID,callback){
+    User.findByIdAndUpdate(userID,{$set:{deviceID:deviceID}},{upsert:true},function(err,user){
+        if(err){
+            console.log(err);
+            callback(err,null);
+        }else{
+            callback(null,user);
+        }
+    })
+}
+
+
+
+
+var deviceInArray=function(groupID,deviceID,callback){
+    Group.findById(groupID,function(err,group){
+        if(err){
+            callback(err,null);
+        }else if(group){
+            var guests=group.guests;
+            if(guests.indexOf(deviceID) != -1){
+                callback(null,true);
+            }else{
+                callback(null,false);
+            }
+        }else{
+            callback("No group with this ID",null);
+        }
+    })
+};
+
+exports.addGuestToGroup=function(groupID,deviceID,callback){
+    deviceInArray(groupID,deviceID,function(err, contains){
+        if(err){
+            callback(err,null);
+        }else if(contains){
+            callback(null,"device already registered");
+        }else{
+            Group.findByIdAndUpdate(groupID,{$push:{guests:deviceID}},{upsert:true},function(err,group){
+                if(err){
+                    callback(err,null);
+                }else if(group){
+                    callback(null,group);
+                }else{
+                    callback("Guest not registered to group",null);
+                }
+            });
+        }
+    })
+
+}
+
 exports.getUserBySess=function(sid,callback){
     User.findOne({sessionID:sid}).populate({path:'role'}).exec(function(err,user){
         if(err){
             callback(err,null);
-        }if(user){
+        }else if(user){
             callback(err,user);
         }else{
             callback(null,null);
@@ -421,9 +475,21 @@ exports.addGroup= function (name,callback){
     })
 }
 
-exports.addUserToGroup=function(groupid,userid,callback){
+exports.addGroupManager=function(groupID,userID,callback){
+    Group.findByIdAndUpdate(groupID,{groupManager:new ObjectId(userID)},function(err,group){
+        if(err){
+            callback(err,null);
+        }else{
+            callback(null,group);
+        }
+    })
+}
 
-    Group.update({'_id':groupid},{$pushAll:{users:[{_id:new ObjectId(userid)}]}},function(err,group){
+
+
+exports.addUserToGroup=function(groupID,userID,callback){
+
+    Group.update({'_id':groupID},{$pushAll:{users:[{_id:new ObjectId(userID)}]}},function(err,group){
         if (err){
             callback(err,null);
         }else{
@@ -432,8 +498,9 @@ exports.addUserToGroup=function(groupid,userid,callback){
     })
 };
 
-exports.removeUserFromGroup=function(groupid,userid,callback){
-    Group.update({'_id':groupid},{ $pull:  { 'users': userid }},{upsert:true},function(err,group){
+
+exports.removeUserFromGroup=function(groupID,userID,callback){
+    Group.update({'_id':groupID},{ $pull:  { 'users': userID }},{upsert:true},function(err,group){
         if(err){
             callback(err,null);
         }else{
@@ -442,19 +509,7 @@ exports.removeUserFromGroup=function(groupid,userid,callback){
             callback(null,group);
 
         }
-    })
-    // Group.findById(groupid,function(err,group){
-    //     if(err){
-    //         callback(err,null);
-    //     }
-    //     else{
-    //         group.users.$pull(userid);
-    //                 console.log("REMOVE USER FROM GROUP");
-    //                 console.log(group.name);
-    //         callback(null,group);
-    //     }
-    // })
-
+    });
 }
 
 exports.getGroup=function(gname,callback){
@@ -504,6 +559,7 @@ exports.getAllUserNotInGroup=function(groupID,callback){
     })
 }
 
+
 exports.getAllGroups= function(callback) {
     Group.find({},function(err,groups){
         if(err){
@@ -515,8 +571,71 @@ exports.getAllGroups= function(callback) {
 };
 
 exports.getGroupOfUser=function(id,callback){
-    Group.find({'users.id':id},function(err, groups){
+    Group.find({'users':id},function(err, groups){
         if (err){callback(err,null)}
         else{callback(null,groups)}
     })
 };
+
+
+
+exports.findGroupsOfUser=function(deviceID,callback){
+    console.log("pipim")
+    Group.find().populate({path:'groupManager'}).populate({path:'users'}).exec(function(err,group){
+        if(err){
+            console.log(err);
+        }else{
+            console.log(group);
+        }
+    })
+}
+
+
+var getUserByDeviceID=function(deviceID,callback){
+    User.findOne({deviceID:deviceID},function(err,user){
+        if(err){
+            callback(err,null);
+        }else if(user){
+            callback(null,user);
+        }else{
+            callback(null,null);
+        }
+    })
+};
+
+var findGroupOfGuest=function(deviceID,callback){
+    Group.find({guests:deviceID},function(err,groups){
+        if(err){
+            callback(err,null);
+        }else if(groups.length>0){
+            callback(null,groups);
+        }else{
+            callback(null,null);
+        }
+    });
+};
+
+exports.getGroupsOfDeviceID=function(deviceID,callback){
+    getUserByDeviceID(deviceID,function(err,user){
+        if(err){
+            callback(err,null);
+        }else if(user){
+            this.getGroupOfUser(user._id,function(err,groups){
+                if(err){
+                    callback(err,null);
+                }else if(group.length>0){
+                    callback(null,groups);
+                }
+            });
+        }else{
+            findGroupOfGuest(deviceID,function(err,groups){
+                if(err){
+                    callback(err,null);
+                }else {
+                    callback(null,groups);
+                }
+            })
+        }
+    })
+}
+
