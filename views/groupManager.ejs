@@ -22,11 +22,13 @@
 <paper-toolbar class="toolbar">
     <paper-icon-button icon="arrow-back" onclick=goAdmin()></paper-icon-button>
     <div class="title">Manage group <%=group.name%></div>
+    <paper-button onclick=addManager()>Add Manager</paper-button>
     <paper-icon-button icon="add"  onclick=addUser()></paper-icon-button>
 </paper-toolbar>
 <div class="container">
     <div class="text-center">
         <div class="layout horizontal wrap" id="list">
+
             <my-list-button url="/getUsersInGroup/<%=group._id%>" field1=username table-name="g" buttonurl="remUserFromGroup/<%=group._id%>" icon="remove-circle" ></my-list-button>
         </div>
     </div>
@@ -38,6 +40,10 @@
     }
 
 
+    function addManager() {
+        var url="/addGroupManager/<%=group._id%>";
+        window.location.href=url;
+    }
     function addUser(){
         var url="/addUserToGroup/<%=group._id%>";
         window.location.href = url;

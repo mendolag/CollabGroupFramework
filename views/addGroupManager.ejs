@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+    <title>Add Component</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <link rel="import" href="/static/webcomponentsjs/webcomponents-lite.min.js">
+    <link rel="import" href="/static/paper-icon-button/paper-icon-button.html">
+    <link rel="import" href="/static/paper-toolbar/paper-toolbar.html">
+    <link rel="import" href="/static/iron-icons/iron-icons.html">
+    <link rel="import" href="/static/polymer/polymer.html">
+    <link rel="import" href="/mycomp/mylist.html">
+    <style>
+        #list{
+            margin:50px;
+        }
+    </style>
+</head>
+<body>
+<paper-toolbar class="toolbar">
+    <paper-icon-button icon="arrow-back" onclick=goAdmin()></paper-icon-button>
+    <div class="title">Select Group Manager</div>
+</paper-toolbar>
+<div class="container">
+    <div class=" text-center" id="list">
+        <my-list url="/getUserList" field1=username table-name="addGroupManager/<%=id%>"></my-list>
+    </div>
+</div>
+
+</body>
+
+
+<script>
+    function htmlDecode(input){
+        var e = document.createElement('div');
+        e.innerHTML = input;
+        return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
+    }
+
+
+    function goAdmin(){
+        var gid  = JSON.parse(htmlDecode("<%= JSON.stringify(id) %>"));
+        var url="/manageGroup/"+ gid  ;
+        console.log(url);
+        window.location.href=url;
+    }
+</script>

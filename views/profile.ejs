@@ -4,7 +4,7 @@
 
 <head>
     <title>Node Authentication</title>
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/bootstrap/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
     <link rel="stylesheet" href="/style/common.css">
     <!--<link rel="import" href="/static/polymer/polymer.html">-->
@@ -36,6 +36,9 @@
                 font-weight: bold;
             };
         }
+        #pimmino{
+            margin:10px;
+        }
     </style>
 </head>
 <body>
@@ -64,35 +67,61 @@
 </div>
 </div>
 </div>
+
 <script src="/liquidAPI.js"></script>
+<script src="/GroupFramework.js"></script>
 <script>
 
     var div = document.querySelector('#pimmino')
+//
+//    Liquid.create({
+//        deploymentServer: {
+//            port: 8888,
+//            route: '/liquid',
+//            host: 'http://localhost',
+//        },
+//
+//        stateServer: {
+//            port: 12304,
+//            host: 'http://localhost'
+//        },
+//
+//        signalingServer: {
+//            port: 12305,
+//            host: 'localhost',
+//            path: '/signaling'
+//        }
+//    }, function(){
+//        Liquid.loadComponent('playground', function(){
+//            Liquid.createComponent('playground', div, {liquidUI: true},function(){
+//                console.log('done')
+//            })
+//        })
+//    })
 
-    Liquid.create({
-        deploymentServer: {
-            port: 8888,
-            route: '/liquid',
-            host: 'http://localhost',
-        },
 
-        stateServer: {
-            port: 12304,
-            host: 'http://localhost'
-        },
-
-        signalingServer: {
-            port: 12305,
-            host: 'localhost',
-            path: '/signaling'
-        }
-    }, function(){
-        Liquid.loadComponent('playground', function(){
-            Liquid.createComponent('playground', div, {liquidUI: true},function(){
-                console.log('done')
-            })
+        Liquid.create({
+            deploymentServers: [{
+                host: 'http://localhost',
+                port: 8888,
+            }],
+            stateServer: {
+                host: 'http://localhost',
+                port: 12304
+            },
+            signalingServer: {
+                host: 'localhost',
+                port: 12305,
+                path: '/signaling'
+            }
+        }).then(function() {
+            Liquid.createComponent('migrate', div, {'liquidui': "default"})
+        }).then(function() {
+            Liquid.loadAndCreateComponent('gallery', div, {'liquidui': "default"})
         })
-    })
+
+    FWConnector.registerUserDeviceID();
+
 </script>
 </body>
 </html>
