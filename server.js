@@ -75,6 +75,18 @@ app.use('/style',express.static(path.join(process.cwd(), 'views/style')));
 //app.use(express.static(components, 'html'));
 
 
+//TODO: Andrea's hack
+bowerFolder = path.join(__dirname, 'liquid', 'bower_components')
+applicationFolder = path.join(__dirname, 'liquid', 'applications')
+liquidComponentFolder = path.join(__dirname, 'liquid',  'liquidComponents')
+dependencyComponentFolder = path.join(__dirname, 'liquid',  'components')
+
+app.use(express.static(bowerFolder))
+app.use(express.static(applicationFolder))
+app.use(express.static(liquidComponentFolder))
+app.use(express.static(dependencyComponentFolder))
+
+
 
 
 console.log('The magic happens on port ' + port);
