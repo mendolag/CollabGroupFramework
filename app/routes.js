@@ -484,7 +484,7 @@ module.exports=function(app,passport,io){
 
 
     app.get('/guest',function(req,res){
-        res.render('guest.ejs');
+        res.render('guest.ejs',{user:null});
         
     });
 

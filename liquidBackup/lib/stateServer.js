@@ -9,6 +9,10 @@ var app = express()
 var server = require('http').Server(app)
 var io = require('socket.io')(server);
 var p2p = require('socket.io-p2p-server').Server;
+/*
+ * Giuseppe's imports
+ */
+var dbFuncs=require('../../app/dbfunc');
 
 // var mongoose = require('mongoose')
 // mongoose.connect(config.database.url)
@@ -84,7 +88,7 @@ function getSubscribedSockets(v) {
 
 /*
  * Input: 
- *    group: the name of the subscription group
+ *    group: the name of the subscription groupC
  *
  * Returns a JSON with the executions specifications needed to the subscription group
  */
@@ -107,7 +111,7 @@ function executionJSON(group) {
 function createID() {
   var date = new Date()
   return date.getTime()
-} 
+}
 
 /*
  * Validation of the config file
@@ -153,6 +157,101 @@ var isValidUsername = function(username) {
   return true
 }
 
+
+/*
+* Giuseppe's functions
+ */
+
+var getDeviceInfo=function(devices,devicesInfo){
+  var groupDevicesInfo={}
+  for (var id in devices){
+    groupDevicesInfo[id]=devicesInfo[id]
+  }
+  return groupDevicesInfo;
+}
+
+var advertiseGroup=function(group,socket,io, application){
+  console.log("advertiseGroup");
+  console.log(group);
+  socket.join(group.id);
+  console.log(application.components)
+
+  io.to(group.id).emit('componentsList', {components: application.components})
+  io.to(group.id).emit('deviceList', {
+    devices: group.devices,
+    devicesInfo: getDeviceInfo(group.devices,application.devicesInfo)
+  })
+    // })
+}
+
+var structureGroupsInfo=function(groups){
+  var gInfo=[]
+  for(var i=0;i<groups.length;i++ ){
+    var group=groups[i]
+    gInfo.push({
+      id:group._id,
+      name:group.name,
+      manager:group.groupManager.deviceID,
+      devices:getDeviceID(group),
+    })
+
+  }
+  return gInfo;
+}
+
+var getDeviceID=function(group){
+  console.log("getDeviceID");
+  console.log(group.users);
+  var devices={}
+  if(group.groupManager!=null){
+    devices[group.groupManager.deviceID]=group.groupManager.deviceID}
+  var users=group.users;
+  var guests=group.guests;
+  for(var i=0;i<users.length;i++ ){
+    var user=users[i];
+    console.log(user.deviceID);
+    if(user.deviceID!=null){
+      devices[user.deviceID]=user.deviceID;
+      }
+  }
+  for(var i=0;i<guests.length;i++ ){
+    var guest=guests[i];
+    if(guest!=null){
+      devices[guest]=guests;}
+  }
+
+  console.log(devices);
+  return devices
+}
+
+var advertiseAllGroups=function(deviceID,socket,io,application){
+  console.log("advertiseAllGroups");
+  console.log(deviceID);
+  dbFuncs.getGroupsOfDeviceID(deviceID,function(err,groups) {
+    if (err) {
+      console.log(err);
+      return false;
+    }
+    if (groups != null) {
+      console.log(groups);
+      var structGroups = structureGroupsInfo(groups);
+      console.log("structGroups");
+      console.log(structGroups)
+      for (var i = 0; i < structGroups.length; i++) {
+        advertiseGroup(structGroups[i], socket, io, application);
+      }
+      return true;
+    }else{
+      return false;
+    }
+  })
+}
+
+/*
+ * Giuseppe's functions
+ */
+
+
 var openSocketServer = function() {
   var port = config.stateServer.port
   server.listen(port);
@@ -175,6 +274,7 @@ var openSocketServer = function() {
   // })
 
   io.on('connection', function(socket){
+
     var __id = socket.id
     var __device_id = undefined
 
@@ -185,26 +285,67 @@ var openSocketServer = function() {
 
       switch(type) {
         case 'new':
+            console.log("new connection");
           __device_id = createID()
-
           application.sockets[__id] = socket
           application.devices[__device_id] = __id
           application.usernames[__device_id] = __device_id
           application.devicesInfo[__device_id] = message.device
+            // console.log(message);
+          var userID=message.username;
+            // console.log(userID);
+          if(userID!=undefined){
+            // console.log("CI SIAMO QUASI");
+            // console.log(userID);
+            dbFuncs.updateUserDeviceId(userID,__device_id,function (err,user) {
+              if(err){
+                console.log(err);
+                throw err;
+              }else{
+                  socket.emit('connected', {
+                    id: __device_id,
+                  })
+                  advertiseAllGroups(__device_id,socket,io,application);
+              }
+            })
+          }else{
+            //TODO:Register Guest
+          }
 
-          socket.emit('connected', {
-            id: __device_id,
-          })
-          io.sockets.emit('deviceList', {
-            devices: application.usernames,
-            devicesInfo: application.devicesInfo
-          }) 
+          // application.sockets[__id] = socket
+          // application.devices[__device_id] = __id
+          // application.usernames[__device_id] = __device_id
+          // application.devicesInfo[__device_id] = message.device
+
+
+          // io.sockets.emit('deviceList', {
+          //   devices: application.usernames,
+          //   devicesInfo: application.devicesInfo
+          // })
           log('Connected: ' + __device_id)
           break;
         case 'reconnect':
-
+          console.log("reconnect");
+          var userID=message.username;
+          // console.log(userID);
+          if(userID!=undefined) {
+            // console.log("CI SIAMO QUASI");
+            // console.log(userID);
+            dbFuncs.updateUserDeviceId(userID, message.id, function (err, user) {
+              if (err) {
+                console.log(err);
+                throw err;
+              } else {
+                socket.emit('connected', {
+                  id: __device_id,
+                })
+                advertiseAllGroups(__device_id, socket, io, application);
+              }
+            })
+          }
           __device_id = message.id
-          var name = message.username
+
+          var name = __device_id //message.username
 
           if(!isValidUsername(name)) {
             name = __device_id
@@ -212,8 +353,10 @@ var openSocketServer = function() {
 
           application.sockets[__id] = socket
           application.devices[__device_id] = __id
-          application.usernames[__device_id] = name
+          application.usernames[__device_id] =  name
           application.devicesInfo[__device_id] = message.device
+
+
 
           console.log('Reconnected: ' + __device_id)
           socket.emit('reconnected', {})
@@ -222,31 +365,53 @@ var openSocketServer = function() {
           console.log('Error on handshake: Message type: ' + message.type)
           break;
       }
-      console.log("calling liquidListener");
-      console.log("liquidListener");
 
-      if(liquidListener){
-        liquidListener.onConnect(__device_id,{
-          components: application.components,
-          devices: application.usernames,
-          devicesInfo: application.devicesInfo
-        },function(err,devices){
-          if(err){
-            console.log(err)
-          }else{
-            io.sockets.emit('componentsList', {components: application.components})
-            io.sockets.emit('deviceList', {
-              devices: devices,
-              devicesInfo: application.devicesInfo
-            })
-          }
-        })}else {
-        io.sockets.emit('componentsList', {components: application.components})
-        io.sockets.emit('deviceList', {
-          devices: application.usernames,
-          devicesInfo: application.devicesInfo
-        })
-      }
+      //advertiseAllGroups(__device_id,socket,io,application);
+      // dbFuncs.getGroupsOfDeviceID(__device_id,function(err,groups) {
+      //   if(err){
+      //     console.log(err);
+      //   }
+      //   if(groups!=null){
+      //   var structGroups = structureGroupsInfo(groups);
+      //   console.log("structGroups");
+      //   console.log(structGroups)
+      //   for (var i = 0; i < structGroups.length; i++) {
+      //     advertiseGroup(structGroups[i], socket, io, application);
+      //   }
+
+      // if(liquidListener){
+      //   liquidListener.onConnect(__device_id,{
+      //     components: application.components,
+      //     devices: application.usernames,
+      //     devicesInfo: application.devicesInfo
+      //   },function(err,groups){
+      //     if(err){
+      //       console.log(err)
+      //     }else if(groups!=null){
+      //       console.log("groups");
+      //       console.log(groups);
+      //       for(var i=0;i<groups;i++){
+      //         advertiseGroup(groups[i],socket,io,application);
+      //       }
+
+
+          //}else{
+            //console.log("no groups")
+            // io.sockets.emit('componentsList', {components: application.components})
+            // io.sockets.emit('deviceList', {
+            //   devices: {__device_id:__device_id},
+            //   devicesInfo: application.devicesInfo
+            // })
+          //}
+        //});
+      // }else {
+      //   console.log("should not be called")
+      //   io.sockets.emit('componentsList', {components: application.components})
+      //   io.sockets.emit('deviceList', {
+      //     devices: application.usernames,
+      //     devicesInfo: application.devicesInfo
+      //   })
+      // }
 
 
     })
@@ -259,7 +424,7 @@ var openSocketServer = function() {
         io.sockets.emit('deviceList', {
           devices: application.usernames,
           devicesInfo: application.devicesInfo
-        }) 
+        })
       } else {
         //TODO: low priority
       }
@@ -274,12 +439,12 @@ var openSocketServer = function() {
         var name = v + "_processing"
         application.commons[name]
         if(typeof(application.commons[name]) == 'function') {
-              application.commons[name](value)
-            }
+          application.commons[name](value)
+        }
 
-            //TODO send only if necessary
-            var o = {}
-            o[v] = value
+        //TODO send only if necessary
+        var o = {}
+        o[v] = value
         variableForwarding(o)
       }
     })
@@ -287,7 +452,7 @@ var openSocketServer = function() {
     socket.on('local', function(data) {
       var local = data.local
       var type = data.type
-      var device = data.device 
+      var device = data.device
       var windowId = data.windowId
       var token = data.token
       var from = data.from
@@ -324,11 +489,12 @@ var openSocketServer = function() {
       delete application.devices[__device_id]
       delete application.usernames[__device_id]
       delete application.devicesInfo[__device_id]
-      liquidListener.onDisconnect(__device_id);
+      dbFuncs.clearDeviceID(__device_id);
+      //liquidListener.onDisconnect(__device_id);
       io.sockets.emit('deviceList', {
         devices: application.usernames,
         devicesInfo: application.devicesInfo
-      }) 
+      })
     })
 
     socket.on('error', function(err) {
@@ -336,107 +502,112 @@ var openSocketServer = function() {
     })
   });
 
-  // io.on('connection', function(socket) {
-  //   log('New cliend connected')
-  //   var room = undefined
-  //   var page = undefined
-  //   clients[socket.id] = socket
 
-  //   socket.on('joinRoom', function(data) {
-  //     room = findOrCreateRoom(data.name)
-  //     page = data.page
 
-  //     socket.join(page)
-  //     for(var i in data.globals) {
-  //       var value = data.globals[i]
-  //       if(cache[i] === undefined) {
-  //         cache[i] = value
-  //       }
 
-  //       socket.emit('globalChange', {v: i, value: cache[i]})
-  //     }
+}
 
-  //     socket.join(room.name)
-      
-  //     room.usersCounter++
-  //     room.usersSockets.push(socket)
+// io.on('connection', function(socket) {
+//   log('New cliend connected')
+//   var room = undefined
+//   var page = undefined
+//   clients[socket.id] = socket
 
-  //     p2p(socket, null, room);
+//   socket.on('joinRoom', function(data) {
+//     room = findOrCreateRoom(data.name)
+//     page = data.page
 
-  //     socket.emit('joinRoom', {id: socket.id})
-  //   })
+//     socket.join(page)
+//     for(var i in data.globals) {
+//       var value = data.globals[i]
+//       if(cache[i] === undefined) {
+//         cache[i] = value
+//       }
 
-  //   socket.on('globalChange', function(data) {
-  //     var v = data.variable
-  //     var value = data.value
+//       socket.emit('globalChange', {v: i, value: cache[i]})
+//     }
 
-  //     if(cache[v] != value) {
-  //       cache[v] = value
-  //       io.to(page).emit('globalChange', {v: v, value: value})
-  //     }
-  //   })
+//     socket.join(room.name)
 
-  //   socket.on('disconnect', function() {
-  //     userLeft(room, socket)
-  //   })
+//     room.usersCounter++
+//     room.usersSockets.push(socket)
 
-  //   socket.on('error', function(err) {
-  //     log('Error ' + err)
-  //   })
+//     p2p(socket, null, room);
 
-  //   socket.emit('handshake')
-  // });
+//     socket.emit('joinRoom', {id: socket.id})
+//   })
 
-  var findOrCreateRoom = function(name) {
-    var room = findRoom(name)
+//   socket.on('globalChange', function(data) {
+//     var v = data.variable
+//     var value = data.value
 
-    if(room === undefined) {
-      return createRoom(name)
-    } else {
-      return room
-    }
-  }
+//     if(cache[v] != value) {
+//       cache[v] = value
+//       io.to(page).emit('globalChange', {v: v, value: value})
+//     }
+//   })
 
-  var findRoom = function(name) {
-    if(rooms[name] === undefined) {
-      return undefined
-    }
+//   socket.on('disconnect', function() {
+//     userLeft(room, socket)
+//   })
 
-    return rooms[name]
-  }
+//   socket.on('error', function(err) {
+//     log('Error ' + err)
+//   })
 
-  var createRoom = function(name) {
-    var room = {
-      name: name,
-      usersCounter: 0,
-      usersSockets: []
-    }
+//   socket.emit('handshake')
+// });
 
-    return addRoom(room)
-  }
+var findOrCreateRoom = function(name) {
+  var room = findRoom(name)
 
-  var addRoom = function(r) {
-    rooms[r.name] = r
-    return rooms[r.name]
-  }
-
-  var removeRoom = function(r) {
-    delete rooms[r.name]
-  }
-
-  var userLeft = function(r, socket) {
-    if(r === undefined) {
-      return
-    }
-
-    io.to(r.name).emit('disconnected-liquid')
-    r.usersCounter--
-    r.usersSockets.splice(r.usersSockets.indexOf(socket), 1)
-    if(r.usersCounter == 0) {
-      removeRoom(r)
-    }
+  if(room === undefined) {
+    return createRoom(name)
+  } else {
+    return room
   }
 }
+
+var findRoom = function(name) {
+  if(rooms[name] === undefined) {
+    return undefined
+  }
+
+  return rooms[name]
+}
+
+var createRoom = function(name) {
+  var room = {
+    name: name,
+    usersCounter: 0,
+    usersSockets: []
+  }
+
+  return addRoom(room)
+}
+
+var addRoom = function(r) {
+  rooms[r.name] = r
+  return rooms[r.name]
+}
+
+var removeRoom = function(r) {
+  delete rooms[r.name]
+}
+
+var userLeft = function(r, socket) {
+  if(r === undefined) {
+    return
+  }
+
+  io.to(r.name).emit('disconnected-liquid')
+  r.usersCounter--
+  r.usersSockets.splice(r.usersSockets.indexOf(socket), 1)
+  if(r.usersCounter == 0) {
+    removeRoom(r)
+  }
+}
+
 
 var  getSocketByDeviceId = function(deviceId) {
   if(!application.devices[deviceId])
@@ -452,15 +623,15 @@ var  getSocketByDeviceId = function(deviceId) {
  in a spectific object schema returned by a callback.
  responesSchema:
  {devices:[device:{id:int,
-                   components:[{id:int, type:String,
-                                variables:[{name:String, type:String, permissions:String}]}]}],
+ components:[{id:int, type:String,
+ variables:[{name:String, type:String, permissions:String}]}]}],
  components: [String],
  links: {
  pairedDevices: [{from:Number, to:Number}],
  pairedComponents:[?],
  pairedVariables:[?]
  }
-  */
+ */
 var computeCompoundAPIAnswer = function(answer, callback) {
   var devices=[]
   var pairedDevices=[]
@@ -474,8 +645,8 @@ var computeCompoundAPIAnswer = function(answer, callback) {
       var vars=comp[keyC].variables
       for(var keyV in vars){
         var variable={name:keyV,
-            scope:vars[keyV].scope,
-            }
+          scope:vars[keyV].scope,
+        }
         variables.push(variable);
       }
 
@@ -596,7 +767,7 @@ var openServerRoutes = function() {
       }
     } else {
       deviceList.push(device)
-    } 
+    }
 
     sendAPIRequest(deviceList, APIRequest, function(err, data) {
       if(err) {
@@ -604,7 +775,7 @@ var openServerRoutes = function() {
       }
       if(show) {
         res.render('graph.jade', {
-          title: 'Device: ' + device, 
+          title: 'Device: ' + device,
           data: data
         })
       } else {
@@ -659,12 +830,12 @@ var openServerRoutes = function() {
 
   //     for(var i in application.devices) {
   //       var socket = getSocketByDeviceId(i)
-        
+
   //       APIRequest.device = i
 
   //       socket.emit('liquidRestApi', APIRequest, function(err, data) {
   //         counter++
-          
+
   //         if(err)
   //           res.send('error')
 
@@ -713,7 +884,6 @@ var openServer = function() {
   app.set('views', path.join(__dirname, '..', 'views'))
   app.use(express.static(publicFolder))
   app.use(express.static(applicationFolder))
-
   initialiseApplication()
   initialiseState()
   openSocketServer()

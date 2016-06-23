@@ -613,9 +613,14 @@ var Liquid = (function () {
 
 	var _configure = function(opts) {
 		return new Promise(function(resolve, reject) {
+			console.log(opts)
 			for(var c in opts) {
 				if(!__config[c]) {
 					__config[c] = opts[c]
+				}
+
+				if(c == 'username') {
+					__username = opts[c]
 				}
 			}
 			resolve()
@@ -936,7 +941,7 @@ var Liquid = (function () {
 					__socket.emit('handshake', {
 						type: 'new',
 						device: _checkDevice(),
-						user:__config.user
+						username:__username
 					})
 				}
 			})
@@ -970,6 +975,7 @@ var Liquid = (function () {
 			})
 
 			__socket.on('deviceList', function(data) {
+				console.log(data)
 				__devices = data.devices
 				__devicesInfo = data.devicesInfo
 				_runEvent('pairedDevicesListUpdate', [__devices, __devicesInfo])
