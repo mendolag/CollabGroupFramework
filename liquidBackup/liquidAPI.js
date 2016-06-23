@@ -1,4 +1,10 @@
 var Liquid = (function () {
+	/*
+	* Giuseppe's vars
+	 */
+	var  user=undefined;
+	var group=undefined;
+	/////////////////////////
 	var __database = undefined
 	var __databaseName = "LiquidDatabase"
 	var __remoteDatabase = false
@@ -34,6 +40,7 @@ var Liquid = (function () {
 
 	var __username = undefined
 
+	var __loadedAssets = {}
 
 	var __loadedComponents = []
 	var __importedComponents = {}
@@ -47,32 +54,64 @@ var Liquid = (function () {
 	var __lastTouchedElement = undefined
 
 	var __defaultLiquidComponents = [
-		// {relUrl: '/bower_components/webcomponentsjs/webcomponents-lite.min.js', ext: 'script'},
-		// {relUrl: '/bower_components/polymer/polymer.html', ext: 'html'},
-		{relUrl: '/components/liquidComponents/liquid-behavior/newliquid-behavior.html', ext: 'html'},
-		{relUrl: '/components/liquidComponents/liquid-ui-behavior/liquid-ui-behavior.html', ext: 'html'},
-		{relUrl: '/components/liquidComponents/liquid-ui/liquid-ui.html', ext: 'html'},
-		{relUrl: '/components/liquidComponents/liquid-component-migrate/liquid-component-migrate.html', ext: 'html'},
-		{relUrl: '/components/liquidComponents/liquid-container/liquid-container.html', ext: 'html'}
+		{relUrl: 'liquid-behavior/newliquid-behavior.html', ext: 'html'},
+		{relUrl: 'liquid-ui-behavior/liquid-ui-behavior.html', ext: 'html'},
+		{relUrl: 'liquid-ui/liquid-ui.html', ext: 'html'},
+		{relUrl: 'liquid-component-migrate/liquid-component-migrate.html', ext: 'html'},
+		{relUrl: 'liquid-container/liquid-container.html', ext: 'html'}
 	]
 
 	var __defaultDependencies = [
-		{relUrl: "/bower_components/mobile-detect/mobile-detect.js", ext: 'script'},
-		{relUrl: "/bower_components/eventEmitter/EventEmitter.min.js", ext: 'script'},
-		{relUrl: "/bower_components/observe-js/src/observe.js", ext: 'script'},
-		{relUrl: "/bower_components/object.observe/dist/object-observe.js", "ext": 'script'},
-		{relUrl: "/bower_components/array.observe/array-observe.js", "ext": 'script'},
-		{relUrl: '/socket.io/socket.io.js', ext: 'script'},
-		{relUrl: '/components/peerjs/peerjs.js', ext: 'script'},
-		{relUrl: '/bower_components/es6-promise-polyfill/promise.js', ext: 'script'},
-		{relUrl: '/bower_components/yjs/y.js', ext: 'script'},
-		{relUrl: '/bower_components/y-map/y-map.js', ext: 'script'},
-		{relUrl: '/bower_components/y-array/y-array.js', ext: 'script'},
-		{relUrl: '/bower_components/y-text/y-text.js', ext: 'script'},
-		{relUrl: '/bower_components/y-memory/y-memory.js', ext: 'script'},
-		{relUrl: '/components/y-liquid/y-liquid-new.js', ext: 'script'},
-		{relUrl: '/bower_components/pouchdb/dist/pouchdb.min.js', ext: 'script'},
-		{relUrl: '/bower_components/pouchdb-find/dist/pouchdb.find.min.js', ext: 'script'}
+		{relUrl: "mobile-detect/mobile-detect.js", ext: 'script'},
+		{relUrl: "eventEmitter/EventEmitter.min.js", ext: 'script'},
+		{relUrl: "observe-js/src/observe.js", ext: 'script'},
+		{relUrl: "object.observe/dist/object-observe.js", "ext": 'script'},
+		{relUrl: "array.observe/array-observe.js", "ext": 'script'},
+		{relUrl: 'socket.io-client/socket.io-client.js', ext: 'script'},
+		{relUrl: 'peerjs/peerjs.js', ext: 'script'},
+		{relUrl: 'es6-promise-polyfill/promise.js', ext: 'script'},
+		{relUrl: 'yjs/y.js', ext: 'script'},
+		{relUrl: 'y-map/y-map.js', ext: 'script'},
+		{relUrl: 'y-array/y-array.js', ext: 'script'},
+		{relUrl: 'y-text/y-text.js', ext: 'script'},
+		{relUrl: 'y-memory/y-memory.js', ext: 'script'},
+		{relUrl: 'y-liquid/y-liquid-new.js', ext: 'script'},
+		{relUrl: 'pouchdb/dist/pouchdb.min.js', ext: 'script'},
+		{relUrl: 'pouchdb-find/dist/pouchdb.find.min.js', ext: 'script'}
+	]
+
+	var _liquidAssets = [
+		'liquid-behavior/newliquid-behavior.html',
+		'liquid-ui-behavior/liquid-ui-behavior.html',
+		'liquid-ui/liquid-ui.html',
+		'liquid-component-migrate/liquid-component-migrate.html',
+		'liquid-container/liquid-container.html',		
+		"mobile-detect/mobile-detect.js",
+		"eventEmitter/EventEmitter.min.js",
+		"observe-js/src/observe.js",
+		"object.observe/dist/object-observe.js",
+		"array.observe/array-observe.js",
+		'socket.io-client/socket.io-client.js',
+		'peerjs/peerjs.js',
+		'es6-promise-polyfill/promise.js',
+		'yjs/y.js',
+		'y-map/y-map.js',
+		'y-array/y-array.js',
+		'y-text/y-text.js',
+		'y-memory/y-memory.js',
+		'y-liquid/y-liquid-new.js',
+		'pouchdb/dist/pouchdb.min.js',
+		'pouchdb-find/dist/pouchdb.find.min.js',
+		'components/liquid-component-array.html',
+		'components/liquid-component-container.html',
+		'components/liquid-component-email.html',
+		'components/liquid-component-gallery.html',
+		'components/liquid-component-googlemaps.html',
+		'components/liquid-component-image.html',
+		'components/liquid-component-object.html',
+		'components/liquid-component-text.html',
+		'components/liquid-component-webcam.html',
+
 	]
 
 	var __config = {}
@@ -169,20 +208,18 @@ var Liquid = (function () {
 
 	var _loadComponent = function(componentName) {
 		return new Promise(function(resolve, reject) {
-			var loadRequestedComponent = function() {
-				_isLoadedComponent()
-					.catch(function(){
-						var component = {relUrl: '/appComponents/' + componentName + '.html', ext: 'html'}
+			_isLoadedComponent()
+				.catch(function(){
+					var component = {relUrl: 'components/liquid-component-' + componentName + '.html', ext: 'html'}
+					if(!_isloadedAsset(component.relUrl)) {
 						_ajaxRequest(component).then(function(){
 							__loadedComponents.push(componentName)
 							resolve()
 						})
-					})
-			}
-
-			_isLoadedDefaultLiquid()
-				.catch(_loadDefaultLiquidComponents)
-				.then(loadRequestedComponent)
+					} else {
+						resolve()
+					}
+				})
 		})
 	}
 
@@ -242,38 +279,40 @@ var Liquid = (function () {
 	// 	}
 	// }
 
-	var _createComponent = function(componentName, element, opts) {
-		return new Promise(function(resolve, reject) {			
-			var createComponent = function() {
-				var newIdentifier = _createUniqueId();
-				var component = document.createElement('liquid-component-' + componentName);
+	var _registerComponent = function(component, componentName, opts) {
+		if(component.__liquidComponentUrl == undefined) {
+			var newIdentifier = _createUniqueId();
 
-				var componentUrl = {
-					device: __deviceId,
-					componentRef: newIdentifier,
-					type: componentName
-				}
-
-				component.__liquidComponentUrl = componentUrl;
-				__componentsReference[newIdentifier] = component;
-				__componentsSummary[newIdentifier] = component.__liquidComponentUrl;
-
-				if(opts && opts.liquidui) {
-					component.liquidui = opts.liquidui
-				}
-
-				if(element && Polymer.dom(element)) {
-					Polymer.dom(element).appendChild(component)
-				} else {
-					element.appendChild(component);
-				}
-
-				resolve(component)
+			var componentUrl = {
+				device: __deviceId,
+				componentRef: newIdentifier,
+				type: componentName
 			}
 
-			_isLoadedDefaultLiquid()
-				.catch(_loadDefaultLiquidComponents)
-				.then(createComponent)
+			component.__liquidComponentUrl = componentUrl;
+			__componentsReference[newIdentifier] = component;
+			__componentsSummary[newIdentifier] = component.__liquidComponentUrl;
+		}
+	}
+
+	var _createComponent = function(componentName, element, opts) {
+		return new Promise(function(resolve, reject) {			
+			var component = document.createElement('liquid-component-' + componentName);
+			
+			if(opts && opts.liquidui) {
+				component.liquidui = opts.liquidui
+			}
+
+			_registerComponent(component, componentName, opts)
+
+			if(element && Polymer.dom(element)) {
+				// console.log(Polymer.dom(element))
+				Polymer.dom(element).appendChild(component)
+			} else {
+				element.appendChild(component);
+			}
+
+			resolve(component)
 		})
 	}
 
@@ -288,14 +327,17 @@ var Liquid = (function () {
 		})
 	}
 
-	var _createMessage = function(options) {
-		message = {}
-
-		for(var i in options) {
-			message[i] = options[i]
+	var _createMessage = function(fromURL, toURL, type, options) {
+		message = {
+			from: fromURL,
+			to: toURL,
+			operation: type,
+			data: {}
 		}
 
-		console.log(message)
+		for(var i in options) {
+			message.data[i] = options[i]
+		}
 
 		return message
 	}
@@ -308,7 +350,7 @@ var Liquid = (function () {
 			fromComponent._getLiquidChildComponents()
 		}
 
-		message = _createMessage(fromURL, toURL, type, {
+		return message = _createMessage(fromURL, toURL, type, {
 			target: {
 				device: toURL.device
 			},
@@ -562,6 +604,7 @@ var Liquid = (function () {
 			_configure(opts)
 				.then(_connectStateServer)
 				.then(_loadDatabase)
+				.then(_loadDefaultLiquidComponents)
 				.then(_preloadComponents)
 				.then(resolve)
 				.catch(reject)
@@ -688,10 +731,18 @@ var Liquid = (function () {
 							if(req.status == 200) {
 								if(file.ext == 'script') {
 									_requestScript(url, file)
-										.then(resolve)
+										.then(function(){	
+											__loading = false
+											_runEvent('loadingChange', [__loading])
+											resolve()
+										})
 								} else if (file.ext == 'html') {
 									_requestHTML(url, file)
-										.then(resolve)
+										.then(function(){	
+											__loading = false
+											_runEvent('loadingChange', [__loading])
+											resolve()
+										})
 								}
 							} else {
 								checkNextServer(servers)
@@ -710,47 +761,107 @@ var Liquid = (function () {
 
 	var _requestScript = function(server, file) {
 		return new Promise(function(resolve, reject) {
-			var complete = function() {
-				__importedComponents[file.relUrl] = true
-				__loading = false
-				_runEvent('loadingChange', [__loading])
-				resolve()
-			}
-
-			var url = server + file.relUrl
-			var script = document.createElement('script');
-			script.src = url
-			script.onload = complete
-			document.querySelector('head').appendChild(script);
-		})
-	}
-
-	var _requestHTML = function(server, file) {
-		return new Promise(function(resolve, reject) {
-			var complete = function() {
-				__importedComponents[file.relUrl] = true
-				__loading = false
-				_runEvent('loadingChange', [__loading])
-				resolve()
-			}
-
-			var url = server + file.relUrl
-			var link = document.createElement('link');
-			link.href = url
-			link.rel = 'import';
-			link.onload = complete
-			document.querySelector('head').appendChild(link)
-		})
-	}
-
-	var _loadAsset = function(file, ext) {
-		return new Promise(function(resolve, reject) {
-			_ajaxRequest({
-				relUrl: '/appComponents/ui/liquid-ui-' + file + '.html',
-				ext: ext
+			var fetchURL = server + '/' + file.relUrl
+			fetch(fetchURL).then(function(response){
+				return response.text();
 			})
+				.then(function(scriptText){
+					_createScriptTag(scriptText, file)
+				})
 				.then(resolve)
 				.catch(reject)
+		})
+	}
+
+	//TODO: polyfill
+	var _requestHTML = function(server, file) {
+		return new Promise(function(resolve, reject) {
+			var fetchURL = server + '/' + file.relUrl
+			fetch(fetchURL).then(function(response){
+				return response.text();
+			})
+				.then(function(importText){
+					_createImportTag(importText, file, server)
+						.then(resolve)
+						.catch(reject)
+				})
+		})
+	}
+
+	var _createScriptTag = function(scriptText, file, element) {
+		return new Promise(function(resolve, reject) {
+			var script = document.createElement('script');
+			script.textContent = scriptText
+
+			document.querySelector('head').appendChild(script)
+
+			__importedComponents[file.relUrl] = true
+			_saveAsset(file, script, scriptText)
+			resolve(script)
+		})
+	}
+
+	var _createImportTag = function(importText, file, server) {
+		return new Promise(function(resolve, reject) {
+			var tempDiv = document.createElement('div')
+			tempDiv.innerHTML = importText
+
+			var link = document.createElement('div')
+			document.querySelector('head').appendChild(link)
+
+			var linkPromises = []
+			var internalLinks = tempDiv.querySelectorAll('link')
+			for(var i = 0; i < internalLinks.length; i++) {
+				var tempUrl = internalLinks[i].getAttribute('href').replace('../','')
+				if(_isLiquidAsset(tempUrl)) {
+					if(!_isloadedAsset(tempUrl)){
+						linkPromises.push(_requestHTML(server, {relUrl: tempUrl, ext:'html'}))
+					}
+				} else {
+					linkPromises.push(_addAndwaitLinkTagLoad(internalLinks[i], link))
+				}
+			} 
+
+			Promise.all(linkPromises).then(function(){
+				var scriptPromises = []
+				var internalScripts = tempDiv.querySelectorAll('script')
+				for(var i = 0; i < internalScripts.length; i++) {
+					var scriptText = internalScripts[i].textContent
+					scriptPromises.push(_executeScript(scriptText, link))
+				} 
+
+				var tags = tempDiv.children
+				for(var i = 0; i < tags.length; i++) {
+					if(tags[i].tagName != 'LINK'){
+						link.appendChild(tags[i])
+					}
+				}
+
+				Promise.all(scriptPromises).then(function(){
+					_runEvent('loadingChange', [__loading])
+					_saveAsset(file, link, importText)
+					resolve(link)
+				})
+			})
+		})
+	}
+
+	var _addAndwaitLinkTagLoad = function(linkTag, element) {
+		return new Promise(function(resolve, reject) {
+			var link = document.createElement('link');
+			link.href = linkTag.getAttribute('href')
+			link.rel = linkTag.rel;
+			link.onload = function(){
+				resolve()
+			}
+			element.appendChild(link)
+		})	
+	}
+
+	var _executeScript = function(scriptText) {
+		return new Promise(function(resolve, reject) {
+			eval(scriptText)
+			resolve()
 		})
 	}
 
@@ -767,7 +878,6 @@ var Liquid = (function () {
 			})
 		})
 	}
-
 
 	/*
 	 getSessionDeviceId
@@ -797,14 +907,17 @@ var Liquid = (function () {
 
 	var _configureSocket = function() {
 		return new Promise(function(resolve, reject) {
+			//var user =__config.user;
 			var stateConf = __config.stateServer || __defaultConfig.stateServer
 			var opts = __config.stateServerOpts || __defaultConfig.stateServerOpts
-
+			console.log("asdasdasda")
+			console.log(opts);
 			if(!stateConf) {
 				reject(new Error('Impossible to read stateServer configurations'))
 			}
 
 			__socket = io(stateConf.host + ':' + stateConf.port, opts)
+			console.log(__socket);
 
 			__socket.on('disconnect', function() {
 				__connected = false
@@ -822,7 +935,8 @@ var Liquid = (function () {
 				} else {
 					__socket.emit('handshake', {
 						type: 'new',
-						device: _checkDevice()	
+						device: _checkDevice(),
+						user:__config.user
 					})
 				}
 			})
@@ -836,8 +950,9 @@ var Liquid = (function () {
 
 			__socket.on('connected', function(data) {
 				__deviceId = data.id
+				
 				__user = data.id
-
+				
 				__connected = true
 				__initialised = true
 				writeSessionDeviceId(__deviceId);
@@ -1027,6 +1142,12 @@ var Liquid = (function () {
 				break;
 			case 'pairToVariable':
 				_incomingPairToVariable(message)
+				break;
+			case 'requestAsset':
+				_incomingRequestAsset(message)
+				break;
+			case 'assetFile':
+				_incomingAssetFile(message)
 				break;
 			default:
 				break;
@@ -1390,52 +1511,132 @@ var Liquid = (function () {
 		})
 	}
 
-	var _saveComponentState = function(label, componentURL) {
-		return new Promise(function(resolve, reject) {
+	// var _saveComponentState = function(label, componentURL) {
+	// 	return new Promise(function(resolve, reject) {
 
+	// 	})
+	// }
+
+	// var _loadComponentState = function(label) {
+
+	// }
+
+	// var _getComponentState = function(label) {
+
+	// }
+
+	// var _getAllComponentState = function() {
+
+	// }
+
+	// var _saveVariableState = function(label) {
+
+	// }
+
+	// var _loadVariableState = function(label) {
+		
+	// }
+
+	// var _getVariableState = function(label) {
+
+	// }
+
+	// var _getAllVariableState = function() {
+
+	// }
+
+	var _isLiquidAsset = function(assetName) {
+		return _liquidAssets.indexOf(assetName) != -1
+	}
+
+	var _isloadedAsset = function(relUrl) {
+		return __loadedAssets[relUrl] != undefined
+	}
+
+	var _loadAsset = function(file, ext) {
+		return new Promise(function(resolve, reject) {
+			_ajaxRequest({
+				relUrl: 'ui/liquid-ui-' + file + '.html',
+				ext: ext
+			})
+				.then(resolve)
+				.catch(reject)
 		})
 	}
 
-	var _loadComponentState = function(label) {
-
+	var _getAsset = function(name) {
+		var assetDescription = __loadedAssets[name]
+		var asset = {
+			name: name,
+			assetContent: assetDescription.textContent,
+			type: assetDescription.file.ext
+		}
+		return asset
 	}
 
-	var _getComponentState = function(label) {
+	var _saveAsset = function(file, component, textContent) {
+		component.id = file.relUrl
 
+		__loadedAssets[file.relUrl] = {
+			file: file,
+			component: component,
+			textContent: textContent
+		} 
 	}
 
-	var _getAllComponentState = function() {
+	var _requestAsset = function(asset, deviceId) {
+		var fromURL = {
+			device: _getDeviceId()
+		}
 
+		var toURL = {
+			device: deviceId
+		}
+
+		var message = _createMessage(fromURL, toURL, 'requestAsset', {
+			asset: asset
+		})
+
+		_sendMessage(toURL, message) 
 	}
 
-	var _saveVariableState = function(label) {
+	var _incomingRequestAsset = function(message) {
+		var fromURL = {
+			device: _getDeviceId()
+		}
 
+		var toURL = message.from
+
+		var message = _createMessage(fromURL, toURL, 'assetFile', _getAsset(message.data.asset))
+
+		_sendMessage(toURL, message)
 	}
 
-	var _loadVariableState = function(label) {
-		
-	}
-
-	var _getVariableState = function(label) {
-
-	}
-
-	var _getAllVariableState = function() {
-
+	var _incomingAssetFile = function(message) {
+		if(message.data.type == 'script') {
+			if(!document.getElementById(message.data.name)) {
+				_createScriptTag(message.data.assetContent, {relUrl: message.data.name, ext: 'script'})
+			}
+		} else if (message.data.type == 'html') {
+			_createImportTag(message.data.assetContent, {relUrl: message.data.name, ext: 'html'})
+		}
 	}
 
 	return {
 		create: _create,
 		isConnected: _isConnected,
 
-		// Device API
+		// Assets API
+		loadedAssets: __loadedAssets,
 		loadAsset: _loadAsset,
+		requestAsset: _requestAsset,
 
 		// Devices API
 		connectDevice: _connectDevice,
 		sendMessage: _sendMessage,
 
 		// Components API
+		registerComponent: _registerComponent,
 		loadComponent: _loadComponent,
 		createComponent: _createComponent,
 		loadAndCreateComponent: _loadAndCreateComponent,
@@ -1455,14 +1656,14 @@ var Liquid = (function () {
 		loadDeviceState: _loadDeviceState,
 		getAllDeviceState: _getAllDeviceState,
 		getDeviceState: _getDeviceState,
-		saveComponentState: _saveComponentState,
-		loadComponentState: _loadComponentState,
-		getAllComponentState: _getAllComponentState,
-		getComponentState: _getComponentState,
-		saveVariableState: _saveVariableState,
-		loadVariableState: _loadVariableState,
-		getAllVariableState: _getAllVariableState,
-		getVariableState: _getVariableState,
+		// saveComponentState: _saveComponentState,
+		// loadComponentState: _loadComponentState,
+		// getAllComponentState: _getAllComponentState,
+		// getComponentState: _getComponentState,
+		// saveVariableState: _saveVariableState,
+		// loadVariableState: _loadVariableState,
+		// getAllVariableState: _getAllVariableState,
+		// getVariableState: _getVariableState,
 
 		getLoadedComponents: _getLoadedComponents,
 		getLoadableComponents: _getLoadableComponents,
