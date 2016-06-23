@@ -137,7 +137,34 @@ exports.updateUserDeviceId=function(userID,deviceID,callback){
 }
 
 
+var clearGuestDeviceID=function(deviceID){
+    Group.update({guests:deviceID},{$pull:{guests:deviceID}},function(err,group){
+        console.log("clearing guest device ID");
+        if(err){
+            console.log(err);
+        }else{
+            console.log(group);
+        }
+    })
+}
 
+
+var clearUserDeviceID=function(deviceID){
+    User.update({deviceID:deviceID},{deviceID:null},function(err,user){
+        console.log("clearing user device ID");
+        if(err){
+            console.log(err);
+        }else{
+            console.log(user);
+        }
+    })
+}
+
+
+exports.clearDeviceID=function(deviceID){
+    clearGuestDeviceID(deviceID);
+    clearUserDeviceID(deviceID);
+}
 
 var deviceInArray=function(groupID,deviceID,callback){
     Group.findById(groupID,function(err,group){
@@ -571,24 +598,36 @@ exports.getAllGroups= function(callback) {
 };
 
 exports.getGroupOfUser=function(id,callback){
-    Group.find({'users':id},function(err, groups){
-        if (err){callback(err,null)}
-        else{callback(null,groups)}
+    var oid=new ObjectId(id);
+    Group.find({$or:[{'users':oid},{'groupManager':oid}]}
+        ).populate({path:'users'}).populate({path:'groupManager'}
+        ).exec(function(err, groups){
+        if (err){
+            callback(err,null)}
+        else{
+            callback(null,groups)}
     })
 };
 
 
 
-exports.findGroupsOfUser=function(deviceID,callback){
-    console.log("pipim")
-    Group.find().populate({path:'groupManager'}).populate({path:'users'}).exec(function(err,group){
-        if(err){
-            console.log(err);
-        }else{
-            console.log(group);
-        }
+
+var findGroupsOfUser=function(deviceID,callback){
+    getUserByDeviceID(deviceID,function(err,user){
+        console.log(user);
+        Group.find({$or:[{'users':user._id},{'groupManager':user._id}]},function (err,groups) {
+            console.log(groups)
+            if(err){
+                callback(err,null);
+            }else if(groups.length>0){
+                callback(null,groups);
+            }else{
+                callback(null,null);
+            }
+        })
     })
 }
+
 
 
 var getUserByDeviceID=function(deviceID,callback){
@@ -616,14 +655,17 @@ var findGroupOfGuest=function(deviceID,callback){
 };
 
 exports.getGroupsOfDeviceID=function(deviceID,callback){
+    var self=this;
+    console.log('getGroupsOfDeviceID')
     getUserByDeviceID(deviceID,function(err,user){
         if(err){
             callback(err,null);
         }else if(user){
-            this.getGroupOfUser(user._id,function(err,groups){
+            console.log(user);
+            self.getGroupOfUser(user._id,function(err,groups){
                 if(err){
                     callback(err,null);
-                }else if(group.length>0){
+                }else{
                     callback(null,groups);
                 }
             });
