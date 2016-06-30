@@ -10,7 +10,13 @@ var ObjectId = mongoose.Types.ObjectId;
 
 
 exports.init=function(req,res) {
-
+    Group.update({}, {guests: []}, {multi: true},function(err,num,group){
+        if(err){
+            console.log(err);
+        }else{
+            console.log("groups cleared: "+num);
+        }
+    });
     Role.findOne({'name': "admin"}, function (err, role) {
         //check if user has email
         if (role) {
@@ -409,7 +415,7 @@ exports.getRole=function(roleID,callback){
 
 
 exports.getAdminById=function(id,callback){
-    User.findOne({'role': new ObjectId(id)},function(err,user){
+    User.findOne({'role': id},function(err,user){
         if(err){
             callback(err,null);
         }else{
@@ -575,13 +581,13 @@ exports.getAllUserNotInGroup=function(groupID,callback){
     Group.findById(groupID,function(err,group){
         if (err){callback(err,null)}
         else if(group){
-        User.find({_id:{$nin:group.users}},function(err,users){
-            if (err){
-                callback(err,null);
-            }else{
-                callback(null,users);
-            }
-        })
+            User.find({_id:{$nin:group.users}},function(err,users){
+                if (err){
+                    callback(err,null);
+                }else{
+                    callback(null,users);
+                }
+            })
         }
     })
 }
@@ -598,14 +604,15 @@ exports.getAllGroups= function(callback) {
 };
 
 exports.getGroupOfUser=function(id,callback){
-    var oid=new ObjectId(id);
-    Group.find({$or:[{'users':oid},{'groupManager':oid}]}
-        ).populate({path:'users'}).populate({path:'groupManager'}
-        ).exec(function(err, groups){
+    // var oid=ObjectId(id);
+    Group.find({$or:[{'users':id},{'groupManager':id}]}
+    ).populate({path:'users'}).populate({path:'groupManager'}
+    ).exec(function(err, groups){
         if (err){
             callback(err,null)}
         else{
-            callback(null,groups)}
+
+            callback(null,groups,id)}
     })
 };
 
@@ -643,7 +650,8 @@ var getUserByDeviceID=function(deviceID,callback){
 };
 
 var findGroupOfGuest=function(deviceID,callback){
-    Group.find({guests:deviceID},function(err,groups){
+    console.log("findGroupOfGuest")
+    Group.find({guests:deviceID}).populate({path:'users'}).populate({path:'groupManager'}).exec(function(err,groups){
         if(err){
             callback(err,null);
         }else if(groups.length>0){
@@ -651,17 +659,16 @@ var findGroupOfGuest=function(deviceID,callback){
         }else{
             callback(null,null);
         }
-    });
+    })
 };
 
 exports.getGroupsOfDeviceID=function(deviceID,callback){
     var self=this;
-    console.log('getGroupsOfDeviceID')
     getUserByDeviceID(deviceID,function(err,user){
         if(err){
             callback(err,null);
         }else if(user){
-            console.log(user);
+            console.log("user request:"+user);
             self.getGroupOfUser(user._id,function(err,groups){
                 if(err){
                     callback(err,null);
@@ -670,6 +677,7 @@ exports.getGroupsOfDeviceID=function(deviceID,callback){
                 }
             });
         }else{
+            console.log("guest:"+deviceID);
             findGroupOfGuest(deviceID,function(err,groups){
                 if(err){
                     callback(err,null);
@@ -680,4 +688,7 @@ exports.getGroupsOfDeviceID=function(deviceID,callback){
         }
     })
 }
+
+
+
 

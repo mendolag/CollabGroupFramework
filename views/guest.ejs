@@ -13,7 +13,9 @@
 </head>
 <body>
 <div id="guestContainer"></div>
-<script src="/liquidAPI.js"></script>
+<script src="/static/fetch/fetch.js"></script>
+
+<script src="/corescripts/liquidAPI.js"></script>
 <script src="/GroupFramework.js"></script>
 <script>
 
@@ -45,26 +47,33 @@
     //    })
 
 
+    var gid=FWConnector.getGroupID()
+    console.log("group ID")
+    console.log(gid);
     Liquid.create({
+        username:undefined,
+        groupID:gid,
+
         deploymentServers: [{
-            host: 'http://localhost',
+//                host: 'http://localhost',
+            host: 'http://10.62.162.222',
             port: 8888,
         }],
         stateServer: {
-            host: 'http://localhost',
+            host: 'http://10.62.162.222',
+
+//                host: 'http://localhost',
             port: 12304
         },
         signalingServer: {
-            host: 'localhost',
+            host: '10.62.162.222',
+
+//                host: 'localhost',
             port: 12305,
             path: '/signaling'
         }
     }).then(function() {
-        Liquid.createComponent('migrate', div, {'liquidui': false})
-    }).then(function() {
-        Liquid.loadAndCreateComponent('gallery', div, {'liquidui': true})
+        Liquid.createComponent('migrate', div, {'liquidui': "default"})
     })
-
-    FWConnector.registerGuestDeviceID();
 </script>
 </body>

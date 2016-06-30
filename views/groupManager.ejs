@@ -13,16 +13,16 @@
     <link rel="import" href="/mycomp/mylistbutton.html">
     <!--<link rel="import" hrer="/mycomp/...">-->
     <style>
-        paper-toolbar{font-size:2px}
+
         #list{
             margin: 20px}
     </style>
 </head>
 <body>
-<paper-toolbar class="toolbar">
+<paper-toolbar  class="toolbar">
     <paper-icon-button icon="arrow-back" onclick=goAdmin()></paper-icon-button>
     <div class="title">Manage group <%=group.name%></div>
-    <paper-button onclick=addManager()>Add Manager</paper-button>
+    <paper-button raised  onclick=addManager()>Add Manager</paper-button>
     <paper-icon-button icon="add"  onclick=addUser()></paper-icon-button>
 </paper-toolbar>
 <div class="container">

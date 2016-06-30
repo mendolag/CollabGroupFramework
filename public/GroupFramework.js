@@ -43,39 +43,36 @@ var FWConnector=(function () {
         //     }
         // }
     }
+    
+    var _print=function(user){
+    console.log(user);
+    }
+
+    // var _registerUserDeviceID=function(){
+    //     console.log(this);
+    //
+    //     var deviceId={deviceID:Liquid.getDeviceId()};
+    //     console.log(deviceId);
+    //     _ajaxRequest("/registerUserDevice","PUT",deviceId,function(err,res){
+    //         if(err){
+    //             console.log(err);
+    //         }else{
+    //             console.log(res);
+    //         }
+    //     })
+    // };
 
 
-    var _registerUserDeviceID=function(){
-        console.log(this);
-        var deviceId={deviceID:Liquid.getDeviceId()};
-        console.log(deviceId);
-        _ajaxRequest("/registerUserDevice","PUT",deviceId,function(err,res){
-            if(err){
-                console.log(err);
-            }else{
-                console.log(res);
-            }
-        })
-    };
-
-
-    var _registerGuestDeviceID=function(){
-        var groupId=window.location.search.substring(1);
-        console.log(groupId);
-        var guestData={
-            groupID:window.location.search.substring(1),
-            deviceID:Liquid.getDeviceId()}
-        _ajaxRequest("/registerGuestDevice","PUT",guestData,function(err,res){
-            if(err){
-                console.log(err);
-            }else{
-                console.log(res);
-            }
-        });
+    var _getGroupID=function(){
+        console.log(window.location);
+        return window.location.search.substring(1);
+   
     };
 
     return{
-        registerUserDeviceID:_registerUserDeviceID,
-        registerGuestDeviceID:_registerGuestDeviceID
+        getGroupID:_getGroupID
+        // print:_print,
+        // registerUserDeviceID:_registerUserDeviceID,
+        // registerGuestDeviceID:_registerGuestDeviceID
     }
 })();

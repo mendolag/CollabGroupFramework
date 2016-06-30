@@ -7,8 +7,9 @@
     <link rel="stylesheet" href="/static/bootstrap/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
     <link rel="stylesheet" href="/style/common.css">
+
     <!--<link rel="import" href="/static/polymer/polymer.html">-->
-    <!--<link rel="import" href="/static/paper-icon-button/paper-icon-button.html>">-->
+    <!--<link rel="import" href="/static/paper-button/paper-button.html">-->
     <!--<link rel="import" href="/static/iron-icons/iron-icons.html">-->
 
     <!--<link rel="import" href="/liquid/public/components/liquidComponents/liquid-behavior/liquid-behavior.html">-->
@@ -36,7 +37,7 @@
                 font-weight: bold;
             };
         }
-        #pimmino{
+        #liquidDiv{
             margin:10px;
         }
     </style>
@@ -47,12 +48,17 @@
 <% } %>
 <paper-toolbar class="toolbar">
     <a href="/logout" ><paper-icon-button icon="arrow-back"></paper-icon-button></a>
+    <button raised class="btn btn-info" id="qrButton" onclick="showQr()" >showQR</button>
     <div class="title">Welcome <%=user.username%></div>
+
     <%if (role=="admin") { %>
     <a href="/admin" ><paper-icon-button icon="supervisor-account"  ></paper-icon-button></a>
     <% } %>
 </paper-toolbar>
-<div class="row" id="pimmino">
+<div id="qr-code-div">
+<canvas id="qr-code"></canvas>
+    </div>
+<div class="row" id="liquidDiv">
     <!--Local Information-->
     <!--<div class="col-sm-6">-->
     <!--<h3><span class="fa fa-user"></span> Local</h3>-->
@@ -68,11 +74,13 @@
 </div>
 </div>
 
-<script src="/liquidAPI.js"></script>
+<script src="/static/fetch/fetch.js"></script>
+<script src="/corescripts/liquidAPI.js"></script>
 <script src="/GroupFramework.js"></script>
+<script src="/static/qr-js/qr.js"></script>
 <script>
 
-    var div = document.querySelector('#pimmino')
+    var div = document.querySelector('#liquidDiv')
 //
 //    Liquid.create({
 //        deploymentServer: {
@@ -98,29 +106,68 @@
 //            })
 //        })
 //    })
-
-
+    var u = <%- JSON.stringify(user)%>
+    //FWConnector.print(u)
         Liquid.create({
+            username: u._id,
+            groupID:undefined,
             deploymentServers: [{
-                host: 'http://localhost',
+//                host: 'http://localhost',
+                host: 'http://10.62.162.222',
                 port: 8888,
             }],
             stateServer: {
-                host: 'http://localhost',
+                host: 'http://10.62.162.222',
+
+//                host: 'http://localhost',
                 port: 12304
             },
             signalingServer: {
-                host: 'localhost',
+                host: '10.62.162.222',
+//                host: 'localhost',
                 port: 12305,
                 path: '/signaling'
             }
         }).then(function() {
             Liquid.createComponent('migrate', div, {'liquidui': "default"})
-        }).then(function() {
-            Liquid.loadAndCreateComponent('gallery', div, {'liquidui': "default"})
-        })
+        }).then(function(){ if(Liquid.qrCode()==undefined){
+            document.getElementById('qrButton').style.display="none"
+        }})
 
-    FWConnector.registerUserDeviceID();
+    document.addEventListener("DOMContentLoaded", function(event) {
+        document.getElementById('qr-code-div').style.display="none"
+//        if(Liquid.qrCode()==undefined){
+//            document.getElementById('qrButton').style.display="none"
+//        }
+    });
+
+    function isElementHidden (element) {
+        return window.getComputedStyle(element, null).getPropertyValue('display') === 'none';
+    }
+
+    var showQr=function(){
+        var qrdiv =document.getElementById('qr-code-div')
+            if(isElementHidden(qrdiv)){
+                console.log("qui ci entro");
+                qrdiv.style.display =''
+            }else{
+                qrdiv.style.display = 'none'
+            }
+
+        console.log("we")
+        var qrCode=""+Liquid.qrCode();
+    console.log(qrCode)
+        if(qrCode!=undefined){
+            console.log("QRCODE")
+            console.log(qrCode)
+            qr.canvas({
+                canvas: document.getElementById('qr-code'),
+                value: qrCode,
+                size:10
+            });
+        }
+    }
+    //FWConnector.registerUserDeviceID();
 
 </script>
 </body>
