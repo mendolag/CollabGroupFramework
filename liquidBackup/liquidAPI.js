@@ -4,7 +4,14 @@ var Liquid = (function () {
 	 */
 	var  user=undefined;
 	var group=undefined;
-	/////////////////////////
+	var __qrCode=undefined;
+	var __groupManager=undefined;
+
+	/*
+	 * Giuseppe's vars
+	 */
+
+
 	var __database = undefined
 	var __databaseName = "LiquidDatabase"
 	var __remoteDatabase = false
@@ -131,6 +138,26 @@ var Liquid = (function () {
 		},
 		multiDeviceDisable: false
 	}
+
+
+	/*
+	 * Giuseppe's func
+	 */
+
+	var _getQrCode=function(){
+		return __qrCode;
+	}
+
+	var _getGroupManager=function(){
+		return __groupManager;
+	}
+	
+	var _checkPemission=function(deviceID){
+		return true
+	}
+	/*
+	 * Giuseppe's func
+	 */
 
 	var _checkDevice = function() {
 		var md = new MobileDetect(window.navigator.userAgent)
@@ -912,11 +939,8 @@ var Liquid = (function () {
 
 	var _configureSocket = function() {
 		return new Promise(function(resolve, reject) {
-			//var user =__config.user;
 			var stateConf = __config.stateServer || __defaultConfig.stateServer
 			var opts = __config.stateServerOpts || __defaultConfig.stateServerOpts
-			console.log("asdasdasda")
-			console.log(opts);
 			if(!stateConf) {
 				reject(new Error('Impossible to read stateServer configurations'))
 			}
@@ -935,13 +959,15 @@ var Liquid = (function () {
 						type: 'reconnect',
 						id: __deviceId,
 						username: __username,
-						device: _checkDevice()
+						device: _checkDevice(),
+						groupID:__config.groupID
 					})
 				} else {
 					__socket.emit('handshake', {
 						type: 'new',
 						device: _checkDevice(),
-						username:__username
+						username:__username,
+						groupID:__config.groupID
 					})
 				}
 			})
@@ -964,7 +990,6 @@ var Liquid = (function () {
 				for(var s in __state) {
 					__subscriptions[s] = {}
 				}
-
 				_configurePeer()
 				_runEvent('connect', [__deviceId, __loadedComponents])
 			})
@@ -975,11 +1000,14 @@ var Liquid = (function () {
 			})
 
 			__socket.on('deviceList', function(data) {
-				console.log(data)
 				__devices = data.devices
 				__devicesInfo = data.devicesInfo
-				_runEvent('pairedDevicesListUpdate', [__devices, __devicesInfo])
+				__groupManager=data.groupManager
+				console.log("deviceList")
+				console.log(__groupManager)
+				_runEvent('pairedDevicesListUpdate', [__devices, __devicesInfo, __groupManager])
 			})
+
 
 			__socket.on('state', function(data){
 				for(var v in data) {
@@ -1030,16 +1058,51 @@ var Liquid = (function () {
 				}
 			})
 
+			/*
+			 * Giuseppe's add
+			 */
+
+			__socket.on('groupDetails',function(data){
+				var details=data.group;
+				console.log(details)
+				__qrCode=data.qr;
+			});
+
+			var _redirectFork=function(fromURL, toURL, message){
+				if(!message) {
+					message = {
+						from: fromURL,
+						to: toURL,
+						target: {
+							device: toURL.device
+						},
+						operation: 'fork',
+						data: {
+							liquidStorage: _getComponent(fromURL).getLiquidVariablesValue()
+						}
+					}
+				}
+
+				_sendMessage(toURL, message)
+			}
+
+			/*
+			 * Giuseppe's add
+			 */
+
 			resolve()
 		})
 	}
 
 	var _configurePeer = function() {
+
 		if(__peer) {
+			console.log("destroyed" )
 			__peer.destroy()
 		}
 
 		if(!__peer || __peer.disconnected) {
+			console.log(__config)
 			var signConf = __config.signalingServer || __defaultConfig.signalingServer
 			var opts = __config.signalingServerOpts || __defaultConfig.signalingServerOpts
 
@@ -1083,6 +1146,8 @@ var Liquid = (function () {
 	var _broadcastMessageToTable = function(tableURL, message) {
 
 	}
+	
+	
 
 	var _sendMessage = function(liquidURL, message) {
 		var deviceIdTo = liquidURL.device
@@ -1128,6 +1193,7 @@ var Liquid = (function () {
 			case 'fork':
 				_incomingForkComponent(message)
 				break;
+			
 			case 'clone':
 				_incomingCloneComponent(message, 'clone')
 				break;
@@ -1234,6 +1300,9 @@ var Liquid = (function () {
 	}
 
 	var _incomingForkComponent = function(message) {
+		if(__device_id==__groupManager){
+			_checkPermission()
+		}
 		var fromUrl = message.from
 		var target = message.target
 		var element = target.element
@@ -1686,6 +1755,10 @@ var Liquid = (function () {
 		removeEventListener: _removeEventListener,
 
 		setLastTouch: _setLastTouch,
-		getLastTouch: _getLastTouch
+		getLastTouch: _getLastTouch,
+
+		//Giuseppe's add
+		qrCode:_getQrCode,
+		getGroupManager:_getGroupManager
 	}
 })();

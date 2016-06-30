@@ -159,86 +159,95 @@ var isValidUsername = function(username) {
 
 
 /*
-* Giuseppe's functions
+ * Giuseppe's functions
  */
+
+var generateGuestLink=function(groupID){
+  var url= config.groupFramework.host+":"+config.groupFramework.port+"/guest/?"+groupID
+  return url;
+}
 
 var getDeviceInfo=function(devices,devicesInfo){
   var groupDevicesInfo={}
   for (var id in devices){
     groupDevicesInfo[id]=devicesInfo[id]
   }
+  console.log(groupDevicesInfo);
   return groupDevicesInfo;
 }
 
-var advertiseGroup=function(group,socket,io, application){
+var advertiseGroup=function(group,socket,io, application,deviceID,groupDetail){
   console.log("advertiseGroup");
-  console.log(group);
-  socket.join(group.id);
-  console.log(application.components)
-
+  if(deviceID==group.manager){
+    console.log("groupManager emit")
+    socket.emit('groupDetails',{group:groupDetail,qr:generateGuestLink(group.id)})
+    io.to(group.id).emit('groupManager', {groupManager: group.manager})
+  }
+  var deviceInfo=getDeviceInfo(group.devices,application.devicesInfo)
+  console.log(group.devices)
+  console.log(deviceInfo);
+  console.log(application.components);
+  socket.join(group.id)
+  // socket.emit('groupManager',)
   io.to(group.id).emit('componentsList', {components: application.components})
   io.to(group.id).emit('deviceList', {
     devices: group.devices,
-    devicesInfo: getDeviceInfo(group.devices,application.devicesInfo)
+    devicesInfo: getDeviceInfo(group.devices,application.devicesInfo),
+    groupManager:group.manager
   })
-    // })
 }
 
 var structureGroupsInfo=function(groups){
   var gInfo=[]
   for(var i=0;i<groups.length;i++ ){
+    console.log()
     var group=groups[i]
+    console.log(group);
+    var groupManagerID=""
+    groupManagerID=group.groupManager.deviceID;
     gInfo.push({
       id:group._id,
       name:group.name,
-      manager:group.groupManager.deviceID,
-      devices:getDeviceID(group),
+      manager:groupManagerID,
+      devices:getDeviceID(group,groupManagerID),
     })
 
   }
   return gInfo;
 }
 
-var getDeviceID=function(group){
+var getDeviceID=function(group,groupManager){
   console.log("getDeviceID");
-  console.log(group.users);
   var devices={}
-  if(group.groupManager!=null){
-    devices[group.groupManager.deviceID]=group.groupManager.deviceID}
+  if(groupManager!=null){
+    devices[groupManager]=groupManager}
   var users=group.users;
   var guests=group.guests;
   for(var i=0;i<users.length;i++ ){
     var user=users[i];
-    console.log(user.deviceID);
     if(user.deviceID!=null){
       devices[user.deviceID]=user.deviceID;
-      }
+    }
   }
   for(var i=0;i<guests.length;i++ ){
     var guest=guests[i];
     if(guest!=null){
-      devices[guest]=guests;}
+      devices[guest]=guest;}
   }
-
-  console.log(devices);
   return devices
 }
 
 var advertiseAllGroups=function(deviceID,socket,io,application){
   console.log("advertiseAllGroups");
-  console.log(deviceID);
   dbFuncs.getGroupsOfDeviceID(deviceID,function(err,groups) {
     if (err) {
       console.log(err);
       return false;
     }
     if (groups != null) {
-      console.log(groups);
-      var structGroups = structureGroupsInfo(groups);
-      console.log("structGroups");
-      console.log(structGroups)
+      var structGroups =  structureGroupsInfo(groups);
       for (var i = 0; i < structGroups.length; i++) {
-        advertiseGroup(structGroups[i], socket, io, application);
+        advertiseGroup(structGroups[i], socket, io, application,deviceID,groups[i]);
       }
       return true;
     }else{
@@ -285,32 +294,48 @@ var openSocketServer = function() {
 
       switch(type) {
         case 'new':
-            console.log("new connection");
+          console.log("new connection");
           __device_id = createID()
           application.sockets[__id] = socket
           application.devices[__device_id] = __id
           application.usernames[__device_id] = __device_id
           application.devicesInfo[__device_id] = message.device
-            // console.log(message);
+          // console.log(message);
           var userID=message.username;
-            // console.log(userID);
-          if(userID!=undefined){
-            // console.log("CI SIAMO QUASI");
-            // console.log(userID);
-            dbFuncs.updateUserDeviceId(userID,__device_id,function (err,user) {
-              if(err){
-                console.log(err);
-                throw err;
-              }else{
-                  socket.emit('connected', {
-                    id: __device_id,
-                  })
-                  advertiseAllGroups(__device_id,socket,io,application);
+          var groupID=message.groupID
+           console.log(message);
+              if(userID!=undefined){
+          // console.log("CI SIAMO QUASI");
+          // console.log(userID);
+          dbFuncs.updateUserDeviceId(userID,__device_id,function (err,user) {
+            if(err){
+              console.log(err);
+              throw err;
+            }else{
+              socket.emit('connected', {
+                id: __device_id,
+              })
+              advertiseAllGroups(__device_id,socket,io,application);
+            }
+          })
+        }else if(groupID!=undefined){
+          dbFuncs.addGuestToGroup(groupID,__device_id,function (err,group) {
+            if(err){
+              console.log(err);
+              //throw err;
+            }else if(group!=null){
+              console.log("addGuestToGroup")
+              console.log(group);
+              socket.emit('connected', {
+                id: __device_id})
+                advertiseAllGroups(__device_id,socket,io,application);}
+            else{
+                console.log("no group found with that id");
               }
-            })
-          }else{
-            //TODO:Register Guest
-          }
+          })
+        }else{
+                console.log("No connections for you")
+              }
 
           // application.sockets[__id] = socket
           // application.devices[__device_id] = __id
@@ -327,6 +352,7 @@ var openSocketServer = function() {
         case 'reconnect':
           console.log("reconnect");
           var userID=message.username;
+          var groupID=message.groupID
           // console.log(userID);
           if(userID!=undefined) {
             // console.log("CI SIAMO QUASI");
@@ -336,13 +362,33 @@ var openSocketServer = function() {
                 console.log(err);
                 throw err;
               } else {
-                socket.emit('connected', {
+                socket.emit('reconnected', {
                   id: __device_id,
+                })
+                advertiseAllGroups(__device_id, socket, io, application,user._id);
+              }
+            })
+          }else if(groupID!=undefined){
+            console.log("Guest reconnect")
+            console.log(groupID)
+            console.log(__device_id);
+            dbFuncs.addGuestToGroup(groupID,message.id,function (err,group) {
+              if (err) {
+                console.log(err);
+                //throw err;
+              } else if (group != null) {
+                console.log("addGuestToGroup")
+                console.log(group);
+                socket.emit('reconnected', {
+                  id: __device_id
                 })
                 advertiseAllGroups(__device_id, socket, io, application);
               }
             })
-          }
+
+          }else{
+              console.log("Reconnect of user without group")
+            }
           __device_id = message.id
 
           var name = __device_id //message.username
@@ -359,7 +405,7 @@ var openSocketServer = function() {
 
 
           console.log('Reconnected: ' + __device_id)
-          socket.emit('reconnected', {})
+          // socket.emit('reconnected', {})
           break;
         default:
           console.log('Error on handshake: Message type: ' + message.type)
@@ -395,15 +441,15 @@ var openSocketServer = function() {
       //       }
 
 
-          //}else{
-            //console.log("no groups")
-            // io.sockets.emit('componentsList', {components: application.components})
-            // io.sockets.emit('deviceList', {
-            //   devices: {__device_id:__device_id},
-            //   devicesInfo: application.devicesInfo
-            // })
-          //}
-        //});
+      //}else{
+      //console.log("no groups")
+      // io.sockets.emit('componentsList', {components: application.components})
+      // io.sockets.emit('deviceList', {
+      //   devices: {__device_id:__device_id},
+      //   devicesInfo: application.devicesInfo
+      // })
+      //}
+      //});
       // }else {
       //   console.log("should not be called")
       //   io.sockets.emit('componentsList', {components: application.components})
