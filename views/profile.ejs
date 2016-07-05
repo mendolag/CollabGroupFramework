@@ -107,39 +107,40 @@
 //        })
 //    })
     var u = <%- JSON.stringify(user)%>
-    //FWConnector.print(u)
         Liquid.create({
             username: u._id,
             groupID:undefined,
             deploymentServers: [{
-//                host: 'http://localhost',
-                host: 'http://10.62.162.222',
+                host: 'http://localhost',
+//                host: 'http://10.62.162.222',
                 port: 8888,
             }],
             stateServer: {
-                host: 'http://10.62.162.222',
+//                host: 'http://10.62.162.222',
 
-//                host: 'http://localhost',
+                host: 'http://localhost',
                 port: 12304
             },
             signalingServer: {
-                host: '10.62.162.222',
-//                host: 'localhost',
+//                host: '10.62.162.222',
+                host: 'localhost',
                 port: 12305,
                 path: '/signaling'
             }
-        }).then(function() {
+        }, GFramework.incommingMessages()
+        ).then(function() {
             Liquid.createComponent('migrate', div, {'liquidui': "default"})
-        }).then(function(){ if(Liquid.qrCode()==undefined){
-            document.getElementById('qrButton').style.display="none"
-        }})
+        })
 
     document.addEventListener("DOMContentLoaded", function(event) {
+        if(GFramework.getQrCode()==undefined) {
+            document.getElementById('qrButton').style.display = "none"
+        }
         document.getElementById('qr-code-div').style.display="none"
-//        if(Liquid.qrCode()==undefined){
-//            document.getElementById('qrButton').style.display="none"
-//        }
     });
+
+
+
 
     function isElementHidden (element) {
         return window.getComputedStyle(element, null).getPropertyValue('display') === 'none';
@@ -153,9 +154,8 @@
             }else{
                 qrdiv.style.display = 'none'
             }
-
         console.log("we")
-        var qrCode=""+Liquid.qrCode();
+        var qrCode=GFramework.getQrCode();
     console.log(qrCode)
         if(qrCode!=undefined){
             console.log("QRCODE")
@@ -167,7 +167,6 @@
             });
         }
     }
-    //FWConnector.registerUserDeviceID();
 
 </script>
 </body>

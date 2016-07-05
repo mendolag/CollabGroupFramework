@@ -76,10 +76,10 @@ app.use('/style',express.static(path.join(process.cwd(), 'views/style')));
 
 
 //TODO: Andrea's hack
-bowerFolder = path.join(__dirname, 'liquid', 'bower_components')
-applicationFolder = path.join(__dirname, 'liquid', 'applications')
-liquidComponentFolder = path.join(__dirname, 'liquid',  'liquidComponents')
-dependencyComponentFolder = path.join(__dirname, 'liquid',  'components')
+bowerFolder = path.join(__dirname, 'liquid.js/liquid', 'bower_components')
+applicationFolder = path.join(__dirname, 'liquid.js/liquid', 'applications')
+liquidComponentFolder = path.join(__dirname, 'liquid.js/liquid',  'liquidComponents')
+dependencyComponentFolder = path.join(__dirname, 'liquid.js/liquid',  'components')
 
 app.use(express.static(bowerFolder))
 app.use(express.static(applicationFolder))

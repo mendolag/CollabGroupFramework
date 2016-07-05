@@ -2,21 +2,97 @@
  * Created by josmendola on 06/05/16.
  */
 
-var FWConnector=(function () {
 
 
-    var fwServer={
-        host:'http://localhost',
-        port:8080
+var GFramework=(function () {
+    var __groupDetails={};
+    var __qrCode=undefined;
+    var __groupManager=undefined;
+    var __roles={}
+
+
+
+
+    var checkLiquid=function(){
+        isLiquid=(Liquid!=undefined)
+
+        return isLiquid
+    }
+
+    var _resGroupDetails=function(data){
+        __groupDetails=data.group;
+        console.log(__groupDetails);
+        __qrCode=data.qr;
+    };
+    var _resGroupManager=function(data){
+        __groupManager=data.groupManager;
+        Liquid.runEvent('groupManagerUpdate', [__groupManager]);
     };
 
-    var _init=function () {
+    var _hasPermissions=function(device){
+        //TODO: add permissions handler
+        return true
+    }
+
+    var _requestActionFork=function(data){
+        console.log('fork request (GroupFramework)');
+        console.log(data)
+        if(checkLiquid()){
+            var deviceList=Liquid.getDevicesList();
+            if(_hasPermissions(data.from.device))
+                for (var id in deviceList){
+                    if(id!=data.from.device){
+                        console.log('id to be forked '+id);
+                        data.to.device=id
+                        data.operation="fork"
+                        Liquid.forkComponent(data.from,data.to,data)
+                    }
+                }
+
+        }
+        else{
+            console.log('Liquid not loaded')
+        }
+    };
+
+    var _requestActionMove=function(data){
 
     };
 
-    var _setDeviceId=function (deviceId,callback) {
+    // var _requestActionClone=function (data) {
+    //     console.log('clone request (GroupFramework)');
+    //     console.log(data)
+    //     if(checkLiquid()){
+    //         var deviceList=Liquid.getDevicesList();
+    //         if(_hasPermissions(data.from.device))
+    //             for (var id in deviceList){
+    //                 if(id!=data.from.device){
+    //                     console.log('id to be forked '+id);
+    //                     data.to.device=id
+    //                     data.operation="fork"
+    //                     Liquid.forkComponent(data.from,data.to,data)
+    //                 }
+    //             }
+    //
+    //     }
+    //     else{
+    //         console.log('Liquid not loaded')
+    //     }
+    // };
 
-    };
+    var __incommingMessages={
+        'groupDetails':_resGroupDetails,
+        'groupManager':_resGroupManager,
+        'requestForkAll':_requestActionFork,
+       // 'requestMove':_requestActionMove,
+        'requestCloneAll':_requestActionClone
+
+    }
+
+
+
+
+
 
     var _ajaxRequest=function(url, method,data,callback){
         var req=new XMLHttpRequest();
@@ -32,46 +108,33 @@ var FWConnector=(function () {
         else{
             req.send();
         }
-
-        // req.onreadystatechange=function(){
-        //     if(req.readyState==4){
-        //         if(req.status==200){
-        //             callback(null,true);
-        //         }
-        //     } else {
-        //         callback(req.errmex,null);
-        //     }
-        // }
-    }
-    
-    var _print=function(user){
-    console.log(user);
     }
 
-    // var _registerUserDeviceID=function(){
-    //     console.log(this);
-    //
-    //     var deviceId={deviceID:Liquid.getDeviceId()};
-    //     console.log(deviceId);
-    //     _ajaxRequest("/registerUserDevice","PUT",deviceId,function(err,res){
-    //         if(err){
-    //             console.log(err);
-    //         }else{
-    //             console.log(res);
-    //         }
-    //     })
-    // };
 
 
     var _getGroupID=function(){
         console.log(window.location);
         return window.location.search.substring(1);
-   
+
     };
+    var _getQrCode=function(){
+        return __qrCode;
+    }
+
+    var _getGroupManager=function(){
+        return __groupManager;
+    }
+
+    var _getIncommingMessages=function () {
+        return __incommingMessages
+    }
 
     return{
-        getGroupID:_getGroupID
-        // print:_print,
+        getGroupManager:_getGroupManager,
+        getGroupID:_getGroupID,
+        getQrCode:_getQrCode,
+        incommingMessages:_getIncommingMessages,
+
         // registerUserDeviceID:_registerUserDeviceID,
         // registerGuestDeviceID:_registerGuestDeviceID
     }

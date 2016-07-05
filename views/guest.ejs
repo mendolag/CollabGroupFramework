@@ -47,7 +47,7 @@
     //    })
 
 
-    var gid=FWConnector.getGroupID()
+    var gid=GFramework.getGroupID();
     console.log("group ID")
     console.log(gid);
     Liquid.create({
@@ -55,24 +55,24 @@
         groupID:gid,
 
         deploymentServers: [{
-//                host: 'http://localhost',
-            host: 'http://10.62.162.222',
+                host: 'http://localhost',
+//            host: 'http://10.62.162.222',
             port: 8888,
         }],
         stateServer: {
-            host: 'http://10.62.162.222',
+//            host: 'http://10.62.162.222',
 
-//                host: 'http://localhost',
+                host: 'http://localhost',
             port: 12304
         },
         signalingServer: {
-            host: '10.62.162.222',
+//            host: '10.62.162.222',
 
-//                host: 'localhost',
+                host: 'localhost',
             port: 12305,
             path: '/signaling'
         }
-    }).then(function() {
+    },GFramework.incommingMessages()).then(function() {
         Liquid.createComponent('migrate', div, {'liquidui': "default"})
     })
 </script>
