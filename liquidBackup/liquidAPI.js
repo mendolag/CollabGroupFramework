@@ -140,6 +140,7 @@ var Liquid = (function () {
 	}
 
 
+
 	/*
 	 * Giuseppe's func
 	 */
@@ -151,13 +152,15 @@ var Liquid = (function () {
 	var _getGroupManager=function(){
 		return __groupManager;
 	}
-	
+
 	var _checkPemission=function(deviceID){
 		return true
 	}
 	/*
 	 * Giuseppe's func
 	 */
+
+	
 
 	var _checkDevice = function() {
 		var md = new MobileDetect(window.navigator.userAgent)
@@ -959,6 +962,7 @@ var Liquid = (function () {
 						type: 'reconnect',
 						id: __deviceId,
 						username: __username,
+						//Giuseppe's add
 						device: _checkDevice(),
 						groupID:__config.groupID
 					})
@@ -966,6 +970,7 @@ var Liquid = (function () {
 					__socket.emit('handshake', {
 						type: 'new',
 						device: _checkDevice(),
+						//Giuseppe's add
 						username:__username,
 						groupID:__config.groupID
 					})
@@ -1002,6 +1007,7 @@ var Liquid = (function () {
 			__socket.on('deviceList', function(data) {
 				__devices = data.devices
 				__devicesInfo = data.devicesInfo
+				//Giuseppe's add
 				__groupManager=data.groupManager
 				console.log("deviceList")
 				console.log(__groupManager)

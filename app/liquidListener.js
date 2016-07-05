@@ -61,11 +61,7 @@ var funcOnDisconnect = function(deviceId) {
     dbFunc.clearDeviceID(deviceId);
 }
 var liquid   = {
-    deployment: require('../liquid/lib/deploymentServer.js'),
-    state: require('../liquid/lib/stateServer.js')
-    ({
-        onConnect: funcOnConnect,
-        onDisconnect: funcOnDisconnect
-    }),
-    signaling: require('../liquid/lib/signalingServer.js')
+    deployment: require('../liquid.js/liquid/lib/deploymentServer.js'),
+    state: require('../liquid.js/liquid/lib/stateServer.js'),
+    signaling: require('../liquid.js/liquid/lib/signalingServer.js')
 }

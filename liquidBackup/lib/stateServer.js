@@ -300,13 +300,11 @@ var openSocketServer = function() {
           application.devices[__device_id] = __id
           application.usernames[__device_id] = __device_id
           application.devicesInfo[__device_id] = message.device
-          // console.log(message);
+          // Giuseppe's add
           var userID=message.username;
           var groupID=message.groupID
            console.log(message);
               if(userID!=undefined){
-          // console.log("CI SIAMO QUASI");
-          // console.log(userID);
           dbFuncs.updateUserDeviceId(userID,__device_id,function (err,user) {
             if(err){
               console.log(err);
@@ -350,13 +348,11 @@ var openSocketServer = function() {
           log('Connected: ' + __device_id)
           break;
         case 'reconnect':
-          console.log("reconnect");
+          // Giuseppe's add
           var userID=message.username;
           var groupID=message.groupID
-          // console.log(userID);
+          
           if(userID!=undefined) {
-            // console.log("CI SIAMO QUASI");
-            // console.log(userID);
             dbFuncs.updateUserDeviceId(userID, message.id, function (err, user) {
               if (err) {
                 console.log(err);
