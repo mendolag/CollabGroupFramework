@@ -130,12 +130,15 @@
         }, GFramework.incommingMessages()
         ).then(function() {
             Liquid.createComponent('migrate', div, {'liquidui': "default"})
+        }).then(function(){
+            if(GFramework.getQrCode()!=undefined) {
+                document.getElementById('qrButton').style.display = ""
+            }
+            document.getElementById('qr-code-div').style.display="none"
         })
 
     document.addEventListener("DOMContentLoaded", function(event) {
-        if(GFramework.getQrCode()==undefined) {
-            document.getElementById('qrButton').style.display = "none"
-        }
+        document.getElementById('qrButton').style.display = "none"
         document.getElementById('qr-code-div').style.display="none"
     });
 

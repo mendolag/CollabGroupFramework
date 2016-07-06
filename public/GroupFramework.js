@@ -20,6 +20,7 @@ var GFramework=(function () {
     }
 
     var _resGroupDetails=function(data){
+        console.log("groupDetails")
         __groupDetails=data.group;
         console.log(__groupDetails);
         __qrCode=data.qr;
@@ -39,7 +40,7 @@ var GFramework=(function () {
         console.log(data)
         if(checkLiquid()){
             var deviceList=Liquid.getDevicesList();
-            if(_hasPermissions(data.from.device))
+            if(_hasPermissions(data.from.device)){
                 for (var id in deviceList){
                     if(id!=data.from.device){
                         console.log('id to be forked '+id);
@@ -48,6 +49,7 @@ var GFramework=(function () {
                         Liquid.forkComponent(data.from,data.to,data)
                     }
                 }
+            }
 
         }
         else{
@@ -55,30 +57,30 @@ var GFramework=(function () {
         }
     };
 
-    var _requestActionMove=function(data){
+    var _requestActionClone=function(data){
+        console.log('clone request (GroupFramework)');
+        console.log(data)
+        if(checkLiquid()){
+            var deviceList=Liquid.getDevicesList();
+            if(_hasPermissions(data.from.device)){
+                for (var id in deviceList){
+                    if(id!=data.from.device){
+                        console.log('id to be forked '+id);
+                        data.to.device=id
+                        data.operation="clone"
+                        Liquid.cloneComponent(data.from,data.to,data)
+                    }
+                }
+            }
 
+        }
+        else{
+            console.log('Liquid not loaded')
+        }
     };
 
-    // var _requestActionClone=function (data) {
-    //     console.log('clone request (GroupFramework)');
-    //     console.log(data)
-    //     if(checkLiquid()){
-    //         var deviceList=Liquid.getDevicesList();
-    //         if(_hasPermissions(data.from.device))
-    //             for (var id in deviceList){
-    //                 if(id!=data.from.device){
-    //                     console.log('id to be forked '+id);
-    //                     data.to.device=id
-    //                     data.operation="fork"
-    //                     Liquid.forkComponent(data.from,data.to,data)
-    //                 }
-    //             }
-    //
-    //     }
-    //     else{
-    //         console.log('Liquid not loaded')
-    //     }
-    // };
+
+
 
     var __incommingMessages={
         'groupDetails':_resGroupDetails,
