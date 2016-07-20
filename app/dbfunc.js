@@ -7,7 +7,8 @@ var Component=require('./models/components');
 var Group=require('./models/group')
 var mongoose=require('mongoose');
 var ObjectId = mongoose.Types.ObjectId;
-
+var config=require("../liquid.js/liquid/config");
+var async = require('async');
 
 exports.init=function(req,res) {
     Group.update({}, {guests: []}, {multi: true},function(err,num,group){
@@ -51,6 +52,7 @@ exports.init=function(req,res) {
             });
         }
     });
+    initComponents()
 };
 //--------------------------------------------
 //USER MANAGEMENT
@@ -237,6 +239,18 @@ exports.removeSession=function(sid){
     })
 }
 
+exports.changeUserRole=function(uid,rid,callback){
+    console.log(uid)
+    console.log(rid)
+    User.update({_id:uid},{$set:{role:new ObjectId(rid)}},function(err,changes,resp){
+        if(err){
+            callback(err,null)
+        }else{
+            callback(null,resp)
+        }
+    })
+}
+
 //--------------------------------------------
 //ROLE MANAGEMENT
 //--------------------------------------------
@@ -248,12 +262,22 @@ exports.getAllRole=function(req,res){
         if(error){
             console.log(error);
         } else {
-            //correct json object
+            //correct json object]
+            console.log(role)
             res.send(role);
         }
     });
 }
 
+exports.getAllFullRole=function(callback){
+    Role.find({}).populate({path:'components.component'}).populate({path:'components.component'}).exec(function(err,roles){
+        if(err){
+            callback(err,null)
+        }else{
+            callback(null, roles)
+        }
+    })
+}
 
 //to be developed
 exports.updateComponentPerm=function( compId,perms){
@@ -277,7 +301,8 @@ exports.updateComponentPerm=function( compId,perms){
  */
 exports.addRole=function(res,req,callback){
     var reqRole=req.body.role;
-    Role.update({'name':reqRole},function(err, role){
+    console.log(reqRole)
+    Role.findOne({'name':reqRole},function(err, role){
         if(err){
             callback(err,null);
         }
@@ -298,7 +323,30 @@ exports.addRole=function(res,req,callback){
         }
     })
 };
-
+// exports.addRole=function(res,req,callback){
+//     var reqRole=req.body.role;
+//     console.log(reqRole)
+//     Role.update({'name':reqRole},function(err, role){
+//         if(err){
+//             callback(err,null);
+//         }
+//         if (role){
+//             callback(null,false);
+//         }
+//         else{
+//             var newRole= new Role();
+//             newRole.name=reqRole;
+//             newRole.components=[];
+//             newRole.save(function(err){
+//                 if(err){
+//                     callback(err,null);
+//                 }else{
+//                     callback(null,true);
+//                 }
+//             });
+//         }
+//     })
+// };
 /*
  removeCompFromRole(RoleId,CompId,callback)
 
@@ -348,13 +396,19 @@ exports.removeCompFromRole=function(RoleId,CompId,callback){
 //};
 
 exports.addComponentToRole=function(RoleId,CompId,callback){
-    Role.update({_id: RoleId},{$pushAll: {components:[{component:CompId,read:false,write:false,push:false,pull:false}]}},{upsert:true},function(err,role){
-        if(err){
-            callback(err,null);
-        }else{
-            console.log(role);
-            callback(null,role);
-        }
+    Component.findOne({_id:CompId},function(err,comp){
+        console.log('addcomponent to role')
+        console.log(comp)
+        if(err){callback(err,null)}
+        else{
+        Role.update({_id: RoleId},{$push: {components:{name:comp.name,component:CompId,read:false,write:false,push:false,pull:false}}},{upsert:true},function(err,role){
+            if(err){
+                callback(err,null);
+            }else{
+                console.log(role);
+                callback(null,role);
+            }
+        })}
     })
 }
 
@@ -429,6 +483,9 @@ exports.getAdminById=function(id,callback){
 //COMPONENT MANAGEMENT
 //--------------------------------------------
 
+
+
+
 exports.addComponent=function(name,path,callback){
     Component.findOne({name:name},function(err,comp){
         if (err){
@@ -450,6 +507,39 @@ exports.addComponent=function(name,path,callback){
     });
 
 };
+
+
+var initComponents=function(callback){
+
+    console.log("inititialize components: ")
+    var components=config.components;
+    async.forEach(components,function(component,callback){
+        Component.findOne({name:component},function(err,comp){
+            if (err){
+                console.log('couldn\'t add component:'+component);
+                callback(err,null);
+            }else if(comp){
+                console.log(component+' component already registered');
+                callback(null,comp);
+            }else{
+                var c=new Component();
+                c.name=component;
+                c.path=component+'.html';
+                c.save(function(err){
+                    if(err){
+                        console.log('couldn\'t add component:'+component);
+                        callback(err,null);
+                    }else{
+                        console.log(component+' added');
+                        callback(null,comp);
+                    }
+                });
+            }
+        });
+    })
+
+
+}
 
 
 exports.deleteComponent=function(searchBy,searchTerm){
@@ -690,5 +780,14 @@ exports.getGroupsOfDeviceID=function(deviceID,callback){
 }
 
 
+exports.getUsersRoleDetail=function(callback){
+    User.findOne({}).populate({path:'role'}).populate({path:'role.components.component'}).exec(function(err,users){
+        if(err){
+            callback(err,null);
+        }
+        else{
+            callback(null,users);
+        }
 
-
+    })
+}

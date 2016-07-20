@@ -127,7 +127,7 @@
                 port: 12305,
                 path: '/signaling'
             }
-        }, GFramework.incommingMessages()
+        }, GFramework.incomingMessages()
         ).then(function() {
             Liquid.createComponent('migrate', div, {'liquidui': "default"})
         }).then(function(){
@@ -135,7 +135,7 @@
                 document.getElementById('qrButton').style.display = ""
             }
             document.getElementById('qr-code-div').style.display="none"
-        })
+        }).then(function(){privilegeHandler.initPrivilegeHandler(GFramework.privileges())})
 
     document.addEventListener("DOMContentLoaded", function(event) {
         document.getElementById('qrButton').style.display = "none"

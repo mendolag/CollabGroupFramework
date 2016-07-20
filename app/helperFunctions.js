@@ -2,6 +2,7 @@
  * Created by josmendola on 09/02/16.
  */
 var DBfunc=require("./dbfunc");
+
 exports.isAdmin=function (req, res, next){
     console.log(req.user);
     if(req.user) {
@@ -37,6 +38,10 @@ exports.isAdmin=function (req, res, next){
     }
 
 
+}
+
+exports.getInitialComponents=function(){
+    return config.components
 }
 
 exports.isLoggedIn=function (req, res, next){

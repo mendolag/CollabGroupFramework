@@ -1,0 +1,79 @@
+<!--<link rel="import" href="../bower_components/">-->
+
+<script src="/static/webcomponentsjs/webcomponents-lite.min.js"></script>
+<link rel="import" href="/static/polymer/polymer.html">
+<link rel="import" href="/static/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="/static/iron-ajax/iron-ajax.html">
+<link rel="import" href="/static/paper-item/paper-item.html">
+<link rel="import" href="/static/paper-listbox/paper-listbox.html">
+<link rel="import" href="/static/paper-menu/paper-menu.html">
+
+<dom-module id="my-dropdown-menu">
+    <style>
+
+    </style>
+    <template>
+
+        <iron-ajax auto url=/getRoleList handle-as="json" last-response='{{roles}}'  ></iron-ajax>
+        <paper-dropdown-menu>
+            <paper-listbox id="menu" attr-for-selected="identifier" class="dropdown-content" selected$="{{role}}">
+                <template is="dom-repeat" items="{{roles}}">
+                    <paper-item identifier$="[[item._id]]" on-click="changeRole">{{item.name}}</paper-item>
+                </template>
+            </paper-listbox>
+
+        </paper-dropdown-menu>
+
+    </template>
+    <script>
+        (function () {
+            'use strict';
+            Polymer({
+                is: 'my-dropdown-menu',
+                properties:{
+                    user:{
+                        type:String
+                    },
+                    role:{
+                        type:String
+                    },
+                    selected:{
+                        type:String,
+                        value:null,
+                        notify:true
+                    },
+                },
+                getHTTPObject:function() {
+                    if (typeof XMLHttpRequest != 'undefined') {
+                        return new XMLHttpRequest();
+                    }
+                    try {
+                        return new ActiveXObject("Msxml2.XMLHTTP");
+                    } catch (e) {
+                        try {
+                            return new ActiveXObject("Microsoft.XMLHTTP");
+                        } catch (e) {}
+                    }
+                    return false;
+                },
+
+
+                changeRole:function(e){
+                    var xmlHttp = this.getHTTPObject(); //returns a XMLHttpRequest object
+                    var mimeType = "application/json";
+                    var url='/changeUserRole/'+this.user+"/"+e.model.__data__.item._id
+                    xmlHttp.open('PUT', url, true);
+                    xmlHttp.setRequestHeader('Content-Type', mimeType);
+                    xmlHttp.send(null);
+                    console.log('request.finished')
+                },
+                ready:function(){
+                    console.log(this.role)
+//                    document.getElementById('menu').select(this.role)
+                }
+
+
+            })
+        })();
+    </script>
+</dom-module>

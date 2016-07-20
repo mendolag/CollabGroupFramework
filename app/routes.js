@@ -155,7 +155,11 @@ module.exports=function(app,passport,io){
     /*
      Element getters
      */
-
+    app.get('/getUser',HFunc.isLoggedIn,function(req,res){
+        var user=req.user;
+        console.log(user)
+        res.send(user);
+    })
 
     app.get('/getUserList',HFunc.isAdmin,function(req,res){
         DBfunc.getAllUser(req,res);
@@ -193,6 +197,8 @@ module.exports=function(app,passport,io){
         })
     })
 
+
+
     app.get('/getUserNotInGroup/:id',HFunc.isAdmin,function (req,res){
 
         var id=req.params.id;
@@ -227,6 +233,21 @@ module.exports=function(app,passport,io){
      Element manager
      */
 
+
+    app.put('/changeUserRole/:userID/:roleID',HFunc.isAdmin,function(req,res){
+        console.log('changeRole')
+        var userID=req.params.userID
+        var roleID=req.params.roleID;
+        DBfunc.changeUserRole(userID,roleID,function(err,changes){
+            if(err){
+                console.log(err)
+            }else{
+                console.log(changes)
+            }
+        })
+        
+    })
+
     app.get("/manageuser/:id",HFunc.isAdmin,function(req,res){
         var id=req.params.id;
         console.log("MANAGEUSER");
@@ -234,7 +255,7 @@ module.exports=function(app,passport,io){
             if(err){
                 throw err
             }else if(user){
-                console.log("USERFOUND");
+                res.render('userManager.ejs',{user:user})
             }else{
                 console.log("USERnotFOUND")
             }
@@ -350,6 +371,7 @@ module.exports=function(app,passport,io){
     });
 
     app.get('/addComp2Role/:roleId/:compId',HFunc.isAdmin,function(req,res){
+        console.log('addCompTo Role')
         var roleId=req.params.roleId;
         var compId=req.params.compId;
         DBfunc.addComponentToRole(roleId,compId,function(err,role){
@@ -357,6 +379,7 @@ module.exports=function(app,passport,io){
                 console.log(err);
                 res.redirect("/managerole/"+roleId);
             }else if(role){
+                console.log(role)
                 res.redirect("/managerole/"+roleId);
             }else{
                 console.log("o");
@@ -365,14 +388,16 @@ module.exports=function(app,passport,io){
     })
 
     app.get('/addComp2Role/:id',HFunc.isAdmin,function(req,res){
+        console.log('addCompTo  dfasf Role')
         var rid=req.params.id;
         res.render("addCompToRole.ejs",{id:rid});
     })
 
     app.post('/addcomponent',HFunc.isAdmin,function(req,res) {
+        
         upload(req, res, function (err) {
             if (err) {
-                return res.end("Error uploading file.");
+                throw err
             }
             var item = res.req;
             DBfunc.addComponent(item.file.originalname, item.route.path, function (err, saved) {
@@ -392,7 +417,8 @@ module.exports=function(app,passport,io){
                 }
 
             });
-        });
+        })
+
     });
 
 

@@ -8,7 +8,8 @@ var GFramework=(function () {
     var __groupDetails={};
     var __qrCode=undefined;
     var __groupManager=undefined;
-    var __roles={}
+    var __roles=undefined;
+    var __user=undefined;
 
 
 
@@ -17,6 +18,16 @@ var GFramework=(function () {
         isLiquid=(Liquid!=undefined)
 
         return isLiquid
+    }
+
+    var _resUser=function(data){
+        console.log('res user')
+        __user=data.user;
+        console.log(__user)
+    }
+
+    var _resRoles=function(data){
+        __roles=data.roles;
     }
 
     var _resGroupDetails=function(data){
@@ -30,6 +41,13 @@ var GFramework=(function () {
         Liquid.runEvent('groupManagerUpdate', [__groupManager]);
     };
 
+    var _getUser=function(){
+        return __user;
+    }
+
+    var _getRoles=function(){
+        return __roles;
+    }
     var _hasPermissions=function(device){
         //TODO: add permissions handler
         return true
@@ -79,15 +97,41 @@ var GFramework=(function () {
         }
     };
 
+    var _checkPrivileges=function(roleID,action){
+        console.log("_checkPrivileges")
+        for(var role in __roles){
+            console.log("role")
+            if(__roles[role]._id==roleID) {
+                for (var comp in components) {
+                    if (components[comp].name = action) {
+                        switch (action) {
+                            case 'fork':
+                                return components[comp].push;
+                                break;
+                            case 'create':
+                                return components[comp].pull;
+                                break;
+                        }
 
+                    }
+                }
+            }
+        }
+    }
 
+    var __privileges={
+        'user':_getUser,
+        'roles':_getRoles,
+    }
 
-    var __incommingMessages={
+    var __incomingMessages={
         'groupDetails':_resGroupDetails,
         'groupManager':_resGroupManager,
         'requestForkAll':_requestActionFork,
-       // 'requestMove':_requestActionMove,
-        'requestCloneAll':_requestActionClone
+        // 'requestMove':_requestActionMove,
+        'requestCloneAll':_requestActionClone,
+        'resUser':_resUser,
+        'resRoles':_resRoles,
 
     }
 
@@ -127,16 +171,19 @@ var GFramework=(function () {
         return __groupManager;
     }
 
-    var _getIncommingMessages=function () {
-        return __incommingMessages
+    var _incomingMessages=function () {
+        return __incomingMessages
+    }
+    var _privileges=function(){
+        return __privileges
     }
 
     return{
         getGroupManager:_getGroupManager,
         getGroupID:_getGroupID,
         getQrCode:_getQrCode,
-        incommingMessages:_getIncommingMessages,
-
+        incomingMessages:_incomingMessages,
+        privileges:_privileges
         // registerUserDeviceID:_registerUserDeviceID,
         // registerGuestDeviceID:_registerGuestDeviceID
     }

@@ -72,8 +72,10 @@
             port: 12305,
             path: '/signaling'
         }
-    },GFramework.incommingMessages()).then(function() {
+    },GFramework.incomingMessages()).then(function() {
         Liquid.createComponent('migrate', div, {'liquidui': "default"})
-    })
+    }).then(function(){privilegeHandler.initPrivilegeHandler(GFramework.privileges())})
+
+
 </script>
 </body>
