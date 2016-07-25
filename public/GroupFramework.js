@@ -8,8 +8,9 @@ var GFramework=(function () {
     var __groupDetails={};
     var __qrCode=undefined;
     var __groupManager=undefined;
-    var __roles=undefined;
-    var __user=undefined;
+    var __roles={};
+    var __user={};
+    var __groups={}
 
 
 
@@ -31,9 +32,11 @@ var GFramework=(function () {
     }
 
     var _resGroupDetails=function(data){
+
         console.log("groupDetails")
         __groupDetails=data.group;
-        console.log(__groupDetails);
+        __groups[data.group._id]=data.group
+        console.log(data);
         __qrCode=data.qr;
     };
     var _resGroupManager=function(data){
@@ -97,6 +100,14 @@ var GFramework=(function () {
         }
     };
 
+    var _requestGroupDevices=function(data){
+        console.log("_requestGroupDevices")
+        var devices=data.devices;
+        var devicesInfo=data.devicesInfo;
+        __groups[data.groupID]={name:data.name,groupID:data.groupID,manager:data.manager,devices:devices,devicesInfo:devicesInfo}
+        Liquid.runEvent('pairedDevicesListUpdate',  [devices, devicesInfo]);
+    }
+
     var _checkPrivileges=function(roleID,action){
         console.log("_checkPrivileges")
         for(var role in __roles){
@@ -128,6 +139,7 @@ var GFramework=(function () {
         'groupDetails':_resGroupDetails,
         'groupManager':_resGroupManager,
         'requestForkAll':_requestActionFork,
+        'groupDevices':_requestGroupDevices,
         // 'requestMove':_requestActionMove,
         'requestCloneAll':_requestActionClone,
         'resUser':_resUser,
@@ -135,8 +147,27 @@ var GFramework=(function () {
 
     }
 
+    var _getGroups=function(){
+        console.log(__groups)
+        return __groups
+    }
 
+    var _getGroup=function(groupID){
+        console.log(groupID)
+        console.log(__groups)
+        return __groups[groupID]
+    }
+    
+    var _getGroupDevices=function(groupID){
+        var group=_getGroup(groupID)
+        console.log(group)
+        return group.devices
+    }
 
+    var _getGroupDevicesInfo=function(roleID){
+        var group=_getGroup(roleID)
+        return group.devicesInfo
+    }
 
 
 
@@ -179,11 +210,15 @@ var GFramework=(function () {
     }
 
     return{
+        getGroups:_getGroups,
         getGroupManager:_getGroupManager,
         getGroupID:_getGroupID,
         getQrCode:_getQrCode,
         incomingMessages:_incomingMessages,
-        privileges:_privileges
+        privileges:_privileges,
+        getGroup:_getGroup,
+        getGroupDevices:_getGroupDevices,
+        getGroupDevicesInfo:_getGroupDevicesInfo
         // registerUserDeviceID:_registerUserDeviceID,
         // registerGuestDeviceID:_registerGuestDeviceID
     }
