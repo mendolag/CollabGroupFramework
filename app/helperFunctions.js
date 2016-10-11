@@ -9,7 +9,7 @@ exports.isAdmin=function (req, res, next){
         console.log("auth");
         DBfunc.getRoleId("admin", function (err, roleId) {
             var ruser= req.user.role;
-            console.log(ruser);
+            console.log(ruser)
             if (ruser==roleId) {
                 console.log("admin logged in");
                 return next();

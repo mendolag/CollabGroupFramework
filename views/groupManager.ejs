@@ -21,10 +21,12 @@
 <body>
 <paper-toolbar  class="toolbar">
     <paper-icon-button icon="arrow-back" onclick=goAdmin()></paper-icon-button>
-    <div class="title">Manage group <%=group.name%></div>
-    <paper-button raised  onclick=addManager()>Add Manager</paper-button>
+    <div class="title">Manage group <%=group.name%>  </div>
+
+    <paper-button raised  onclick=addManager()>Modify Manager</paper-button>
     <paper-icon-button icon="add"  onclick=addUser()></paper-icon-button>
 </paper-toolbar>
+<h2>Manager: <%=group.groupManager.username%></h2>
 <div class="container">
     <div class="text-center">
         <div class="layout horizontal wrap" id="list">

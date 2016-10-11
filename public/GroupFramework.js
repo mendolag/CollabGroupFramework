@@ -5,7 +5,7 @@
 
 
 var GFramework=(function () {
-    var __groupDetails={};
+    var __groupsDetails={};
     var __qrCode=undefined;
     var __groupManager=undefined;
     var __roles={};
@@ -34,8 +34,8 @@ var GFramework=(function () {
     var _resGroupDetails=function(data){
 
         console.log("groupDetails")
-        __groupDetails=data.group;
-        __groups[data.group._id]=data.group
+        __groupsDetails[data.group._id]=data.group;
+
         console.log(data);
         __qrCode=data.qr;
     };
@@ -51,9 +51,46 @@ var GFramework=(function () {
     var _getRoles=function(){
         return __roles;
     }
-    var _hasPermissions=function(device){
+    var _hasPermissions=function(device,groupID,compName,action){
+        console.log(device)
+
+        var groupGuests =__groupsDetails[groupID].guests
+        var groupUsers=__groupsDetails[groupID].users
+
+        for(var i=0;i<groupUsers.length; i++){
+
+            if(groupUsers[i].deviceID===device){
+                console.log("device Found")
+                for(var j=0;j<__roles.length;j++){
+                    if(__roles[j]._id==groupUsers[i].role){
+                        console.log("role Found")
+                        console.log(__roles[j])
+                        var components=__roles[j].components;
+                        for(var k=0;k<components.length;k++){
+                            if(components[k].name==compName){
+                                if(action){
+                                    console.log('request Granted')
+                                return components[k][action]}
+                                else{
+                                    console.log("can receive")
+                                    return true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
         //TODO: add permissions handler
-        return true
+        if(!action){
+        for(var i=0;i<groupGuests.length; i++){
+            if(groupGuests[i]==device){
+                console.log("broadcast to guest")
+                return true
+            }
+        }}
+        console.log('can not broadcast')
+        return false
     }
 
     var _requestActionFork=function(data){
@@ -61,13 +98,14 @@ var GFramework=(function () {
         console.log(data)
         if(checkLiquid()){
             var deviceList=Liquid.getDevicesList();
-            if(_hasPermissions(data.from.device)){
+            if(_hasPermissions(data.from.device,data.groupID,data.from.type,'push')){
                 for (var id in deviceList){
                     if(id!=data.from.device){
                         console.log('id to be forked '+id);
                         data.to.device=id
                         data.operation="fork"
-                        Liquid.forkComponent(data.from,data.to,data)
+                        if((Liquid.getDeviceId()==id)||(_hasPermissions(id,data.groupID,data.from.type))){
+                        Liquid.forkComponent(data.from,data.to,data)}
                     }
                 }
             }
@@ -83,13 +121,14 @@ var GFramework=(function () {
         console.log(data)
         if(checkLiquid()){
             var deviceList=Liquid.getDevicesList();
-            if(_hasPermissions(data.from.device)){
+            if(_hasPermissions(data.from.device,data.groupID,data.from.type,'push')){
                 for (var id in deviceList){
                     if(id!=data.from.device){
                         console.log('id to be forked '+id);
                         data.to.device=id
                         data.operation="clone"
-                        Liquid.cloneComponent(data.from,data.to,data)
+                        if((Liquid.getDeviceId()==id)||(_hasPermissions(id,data.groupID,data.from.type))){
+                        Liquid.cloneComponent(data.from,data.to,data)}
                     }
                 }
             }
@@ -99,36 +138,55 @@ var GFramework=(function () {
             console.log('Liquid not loaded')
         }
     };
+    
+    var _activateDevice=function () {
+        var deviceId=Liquid.getDeviceId()
+        var user=_getUser()
+        Liquid.customServerMessage('activateDevice',{user:user,deviceID:deviceId})
+        console.log("GFsendMex")
+    }
+
+    _updateActiveDevice=function(data){
+        console.log('updateDevice')
+        console.log(data)
+        Liquid.runEvent('activateDevice',[data])
+    }
 
     var _requestGroupDevices=function(data){
         console.log("_requestGroupDevices")
+        console.log(data)
         var devices=data.devices;
         var devicesInfo=data.devicesInfo;
-        __groups[data.groupID]={name:data.name,groupID:data.groupID,manager:data.manager,devices:devices,devicesInfo:devicesInfo}
+        __groups[data.groupID]={name:data.name,groupID:data.groupID,manager:data.groupManager,devices:devices,devicesInfo:devicesInfo}
         Liquid.runEvent('pairedDevicesListUpdate',  [devices, devicesInfo]);
     }
 
-    var _checkPrivileges=function(roleID,action){
-        console.log("_checkPrivileges")
-        for(var role in __roles){
-            console.log("role")
-            if(__roles[role]._id==roleID) {
-                for (var comp in components) {
-                    if (components[comp].name = action) {
-                        switch (action) {
-                            case 'fork':
-                                return components[comp].push;
-                                break;
-                            case 'create':
-                                return components[comp].pull;
-                                break;
-                        }
-
-                    }
-                }
-            }
-        }
-    }
+    // var _checkPrivileges=function(roleID,action){
+    //     console.log("_checkPrivileges")
+    //     for(var role in __roles){
+    //         if(__roles[role]._id==roleID) {
+    //             for (var comp in components) {
+    //                 if (components[comp].name = action) {
+    //                     switch (action) {
+    //                         case 'fork':
+    //                             return components[comp].push;
+    //                             break;
+    //                         case 'create':
+    //                             return components[comp].pull;
+    //                             break;
+    //                         case 'clone':
+    //                             return components[comp].push;
+    //                             break;
+    //                         case 'migrate':
+    //                             return components[comp].push;
+    //                             break;
+    //                     }
+    //
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
     var __privileges={
         'user':_getUser,
@@ -144,6 +202,7 @@ var GFramework=(function () {
         'requestCloneAll':_requestActionClone,
         'resUser':_resUser,
         'resRoles':_resRoles,
+        'updateActiveDevice':_updateActiveDevice
 
     }
 
@@ -208,8 +267,12 @@ var GFramework=(function () {
     var _privileges=function(){
         return __privileges
     }
+    var _getUser=function(){
+        return __user;
+    }
 
     return{
+        getUser:_getUser,
         getGroups:_getGroups,
         getGroupManager:_getGroupManager,
         getGroupID:_getGroupID,
@@ -218,7 +281,8 @@ var GFramework=(function () {
         privileges:_privileges,
         getGroup:_getGroup,
         getGroupDevices:_getGroupDevices,
-        getGroupDevicesInfo:_getGroupDevicesInfo
+        getGroupDevicesInfo:_getGroupDevicesInfo,
+        activateDevice:_activateDevice
         // registerUserDeviceID:_registerUserDeviceID,
         // registerGuestDeviceID:_registerGuestDeviceID
     }

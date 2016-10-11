@@ -35,14 +35,14 @@ exports.init=function(req,res) {
             });
         }
     });
-    Role.findOne({'name': "guest"}, function (err, role) {
+    Role.findOne({'name': "Follower"}, function (err, role) {
         //check if user has email
         if (role) {
             console.log("role guest found");
         } else {
             console.log("init admin role");
             var role = new Role();
-            role.name = "guest";
+            role.name = "Follower";
             role.save(function (err) {
                 if (err) {
                     throw err;
@@ -104,8 +104,10 @@ exports.registerUser=function(req,res,username){
                 newUser.username = username;
                 newUser.password = newUser.generateHash(password);
                 //set the user's credentials
-                var role="guest"
-                if(req.body.role!=undefined){
+                var role="Follower"
+                console.log('req.body.role')
+                console.log(req.body.role)
+                if(req.body.role!=undefined && req.body.role!="" && req.body.role!=null){
                     role=req.body.role;
                 }
                 self.getRoleId(role,function(err,roleId) {
@@ -134,11 +136,17 @@ exports.registerUser=function(req,res,username){
 
 
 exports.updateUserDeviceId=function(userID,deviceID,callback){
-    User.findByIdAndUpdate(userID,{$set:{deviceID:deviceID}},{upsert:true},function(err,user){
+    console.log("UPDATE DEVICE ID")
+    User.findByIdAndUpdate(userID,{$set:{deviceID:deviceID}},{new:false,},function(err,user,changes){
         if(err){
             console.log(err);
             callback(err,null);
         }else{
+            console.log(deviceID)
+            console.log('changes')
+            console.log(changes)
+            console.log("user")
+            console.log(user)
             callback(null,user);
         }
     })
@@ -158,6 +166,7 @@ var clearGuestDeviceID=function(deviceID){
 
 
 var clearUserDeviceID=function(deviceID){
+    console.log("CLEAR DEVICE ID")
     User.update({deviceID:deviceID},{deviceID:null},function(err,user){
         console.log("clearing user device ID");
         if(err){
@@ -648,10 +657,13 @@ exports.getGroup=function(gname,callback){
 
 
 exports.getFullGroup=function(groupID,callback){
-    Group.findById(groupID).populate({path:'users'}).exec(function(err,group){
+    Group.findById(groupID).populate([{path:'users'},{path:'groupManager'}]).exec(function(err,group){
         if(err){
             callback(err,null);
         }else{
+            if(group.groupManager==undefined){
+                group.groupManager={username:"Not Assgined"}
+            }
             callback(null,group);
         }
     });

@@ -131,16 +131,7 @@ module.exports=function(app,passport,io){
             res.render('admin.ejs',{sucmex:req.flash('succes'),errmex:req.flash('error'),user:user});
         });
         res.render('admin.ejs',{sucmex:req.flash('succes'),errmex:req.flash('error'),user:req.user});
-        //DBfunc.getFullUser(req.user._id,function(err,user){
-        //    if(err){
-        //        throw err;
-        //    }else{
-        //        passport.deserializeUser(req.user._id,function(err,user){
-        //            res.render('admin.ejs',{sucmex:req.flash('succes'),errmex:req.flash('error'),user:user});
-        //        });
-        //
-        //    }
-
+        
     });
 
 
@@ -335,7 +326,7 @@ module.exports=function(app,passport,io){
             if(err){
                 throw err;
             }else{
-                res.redirect('/manageGroup/'+groupId);
+                res.redirect('/managegroup/'+groupId);
             }
         })
 
@@ -511,7 +502,6 @@ module.exports=function(app,passport,io){
 
     app.get('/guest',function(req,res){
         res.render('guest.ejs',{user:null});
-        
     });
 
     app.put('/registerGuestDevice',function(req,res){

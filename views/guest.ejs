@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-    <title>Add Component</title>
+    <title>Guest group platform</title>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
     <!--    <script src="../bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>-->
@@ -20,62 +20,23 @@
 <script>
 
     var div = document.querySelector('#guestContainer');
-    //
-    //    Liquid.create({
-    //        deploymentServer: {
-    //            port: 8888,
-    //            route: '/liquid',
-    //            host: 'http://localhost',
-    //        },
-    //
-    //        stateServer: {
-    //            port: 12304,
-    //            host: 'http://localhost'
-    //        },
-    //
-    //        signalingServer: {
-    //            port: 12305,
-    //            host: 'localhost',
-    //            path: '/signaling'
-    //        }
-    //    }, function(){
-    //        Liquid.loadComponent('playground', function(){
-    //            Liquid.createComponent('playground', div, {liquidUI: true},function(){
-    //                console.log('done')
-    //            })
-    //        })
-    //    })
-
 
     var gid=GFramework.getGroupID();
     console.log("group ID")
     console.log(gid);
     Liquid.create({
-        username:undefined,
-        groupID:gid,
-
-        deploymentServers: [{
-                host: 'http://localhost',
-//            host: 'http://10.62.162.222',
-            port: 8888,
-        }],
-        stateServer: {
-//            host: 'http://10.62.162.222',
-
-                host: 'http://localhost',
-            port: 12304
-        },
-        signalingServer: {
-//            host: '10.62.162.222',
-
-                host: 'localhost',
-            port: 12305,
-            path: '/signaling'
-        }
-    },GFramework.incomingMessages()).then(function() {
-        Liquid.createComponent('migrate', div, {'liquidui': "default"})
+            username:undefined,
+            groupID:gid,
+            webrtc: true,
+            deploymentServer: [
+                'localhost'
+            ],
+            //stateServer: '127.0.0.1:12304',
+//            signalingServer: '127.0.0.1:12305/signaling'
+        signalingServer:'localhost:12305/signaling'
+        },GFramework.incomingMessages()).then(function() {
+        Liquid.createComponent('guest', div, {'liquidui': ""})
     }).then(function(){privilegeHandler.initPrivilegeHandler(GFramework.privileges())})
-
 
 </script>
 </body>

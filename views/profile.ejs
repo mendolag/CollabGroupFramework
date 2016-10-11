@@ -3,9 +3,9 @@
 <html>
 
 <head>
-    <title>Node Authentication</title>
-    <link rel="stylesheet" href="/static/bootstrap/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+    <title>Group platform</title>
+    <!--<link rel="stylesheet" href="/static/bootstrap/dist/css/bootstrap.min.css">-->
+    <!--<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">-->
     <link rel="stylesheet" href="/style/common.css">
 
     <!--<link rel="import" href="/static/polymer/polymer.html">-->
@@ -30,7 +30,7 @@
         body {padding: 10px; word-wrap: break-word;}
         h1{margin: 10px}
         paper-toolbar.toolbar {
-            margin: 1px
+            margin: 1px;
             --paper-toolbar-background: #334980;
             --paper-toolbar-title: {
                 font-style: italic;
@@ -56,20 +56,9 @@
     <% } %>
 </paper-toolbar>
 <div id="qr-code-div">
-<canvas id="qr-code"></canvas>
-    </div>
+    <canvas id="qr-code"></canvas>
+</div>
 <div class="row" id="liquidDiv">
-    <!--Local Information-->
-    <!--<div class="col-sm-6">-->
-    <!--<h3><span class="fa fa-user"></span> Local</h3>-->
-    <!--<p>-->
-    <!--<strong>id</strong>: <%= user._id%><br>-->
-    <!--<strong>email</strong>: <%= user.email%><br>-->
-    <!--<strong>role</strong>:<%= role%>-->
-    <!--</p>-->
-
-
-    <!--</div>-->
 </div>
 </div>
 </div>
@@ -81,61 +70,50 @@
 <script>
 
     var div = document.querySelector('#liquidDiv')
-//
-//    Liquid.create({
-//        deploymentServer: {
-//            port: 8888,
-//            route: '/liquid',
-//            host: 'http://localhost',
-//        },
-//
-//        stateServer: {
-//            port: 12304,
-//            host: 'http://localhost'
-//        },
-//
-//        signalingServer: {
-//            port: 12305,
-//            host: 'localhost',
-//            path: '/signaling'
-//        }
-//    }, function(){
-//        Liquid.loadComponent('playground', function(){
-//            Liquid.createComponent('playground', div, {liquidUI: true},function(){
-//                console.log('done')
-//            })
-//        })
-//    })
+    //
+    //    Liquid.create({
+    //        deploymentServer: {
+    //            port: 8888,
+    //            route: '/liquid',
+    //            host: 'http://localhost',
+    //        },
+    //
+    //        stateServer: {
+    //            port: 12304,
+    //            host: 'http://localhost'
+    //        },
+    //
+    //        signalingServer: {
+    //            port: 12305,
+    //            host: 'localhost',
+    //            path: '/signaling'
+    //        }
+    //    }, function(){
+    //        Liquid.loadComponent('playground', function(){
+    //            Liquid.createComponent('playground', div, {liquidUI: true},function(){
+    //                console.log('done')
+    //            })
+    //        })
+    //    })
     var u = <%- JSON.stringify(user)%>
-        Liquid.create({
-            username: u._id,
-            groupID:undefined,
-            deploymentServers: [{
-                host: 'http://localhost',
-//                host: 'http://10.62.162.222',
-                port: 8888,
-            }],
-            stateServer: {
-//                host: 'http://10.62.162.222',
-
-                host: 'http://localhost',
-                port: 12304
-            },
-            signalingServer: {
-//                host: '10.62.162.222',
-                host: 'localhost',
-                port: 12305,
-                path: '/signaling'
-            }
-        }, GFramework.incomingMessages()
-        ).then(function() {
-            Liquid.createComponent('migrate', div, {'liquidui': "default"})
-        }).then(function(){
-            if(GFramework.getQrCode()!=undefined) {
-                document.getElementById('qrButton').style.display = ""
-            }
-            document.getElementById('qr-code-div').style.display="none"
-        }).then(function(){privilegeHandler.initPrivilegeHandler(GFramework.privileges())})
+            Liquid.create({
+                        username: u._id,
+                        groupID:undefined,
+                        webrtc: true,
+                        deploymentServer: [
+//                            '127.0.0.1:8888'
+                                'localhost'
+                        ],
+//                        stateServer: '127.0.0.1:12304',
+//                        stateServer: '192.168.4.254',
+//                        signalingServer: '127.0.0.1:12305/signaling'
+                       signalingServer: 'localhost:12305/signaling'
+                    }, GFramework.incomingMessages()
+            ).then(function() {
+                Liquid.createComponent('migrate', div, {'liquidui': ""})
+            }).then(function(){
+                document.getElementById('qr-code-div').style.display="none"
+            }).then(function(){privilegeHandler.initPrivilegeHandler(GFramework.privileges())})
 
     document.addEventListener("DOMContentLoaded", function(event) {
         document.getElementById('qrButton').style.display = "none"
@@ -151,15 +129,15 @@
 
     var showQr=function(){
         var qrdiv =document.getElementById('qr-code-div')
-            if(isElementHidden(qrdiv)){
-                console.log("qui ci entro");
-                qrdiv.style.display =''
-            }else{
-                qrdiv.style.display = 'none'
-            }
+        if(isElementHidden(qrdiv)){
+            console.log("qui ci entro");
+            qrdiv.style.display =''
+        }else{
+            qrdiv.style.display = 'none'
+        }
         console.log("we")
         var qrCode=GFramework.getQrCode();
-    console.log(qrCode)
+        console.log(qrCode)
         if(qrCode!=undefined){
             console.log("QRCODE")
             console.log(qrCode)

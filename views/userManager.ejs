@@ -13,14 +13,11 @@
     <link rel="import" href="/static/iron-icons/iron-icons.html">
     <!--<link rel="import" href="/mycomp/mylist.html">-->
     <link rel="import" href="/mycomp/mydropdownmenu.html">
-    <style>
+    <style is="custom-style">
         .title{padding: 10px}
-        paper-toolbar.toolbar {
-            --paper-toolbar-background: #334980;
-            --paper-toolbar-title: {
-                font-style: italic;
-                font-weight: bold;
-            };
+        paper-button {
+            background-color: #334980;
+            color:white;
         }
     </style>
 </head>
@@ -29,19 +26,25 @@
 <paper-toolbar class="toolbar">
     <paper-icon-button icon="arrow-back" onclick=goAdmin()></paper-icon-button>
     <div class="title">Manage user <%=user.username%></div>
-    <paper-icon-button icon="add"  onclick=addComp()></paper-icon-button>
+    <paper-button raised  onclick=deleteUser(user._id)>Delete user</paper-button>
 </paper-toolbar>
 
 <div class="col-sm-8 col-sm-offset-1">
     <!--<paper-icon-button id="add" icon="add" on-tap="_addComponent"></paper-icon-button>-->
     <h4>Role</h4>
     <my-dropdown-menu user="<%=user._id%>" role="<%=user.role._id%>"></my-dropdown-menu>
+    </br></br>
+
 </div>
+
 
 <script>
 
     function goAdmin(){
         window.location.href="/admin";
+    }
+    function deleteUser(id){
+
     }
 </script>
 
